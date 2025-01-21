@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
           headlineLarge: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            color: Color(0XFF9B2226), // Terracotta
+            color: Color(0XFF9B2226),
           ),
           bodyLarge: TextStyle(
             fontSize: 16,

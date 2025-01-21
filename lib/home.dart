@@ -2,7 +2,8 @@ import 'package:book_voyage_demo/login.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget{
-  const HomePage({super.key});
+  final String uid;
+  const HomePage({super.key, required this.uid});
   @override
   Widget build(BuildContext context) {
     return SafeArea(

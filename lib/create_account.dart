@@ -1,4 +1,5 @@
 import 'package:book_voyage_demo/home.dart';
+import 'package:book_voyage_demo/interests_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -127,7 +128,7 @@ class _CreateAccountState extends State<CreateAccountPage>{
       );
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context)=>const HomePage()),
+        MaterialPageRoute(builder: (context)=>InterestsPage(uid: uid)),
       );
     }on FirebaseAuthException catch (e) {
       // Check for specific error code when email is already in use
@@ -158,6 +159,8 @@ class _CreateAccountState extends State<CreateAccountPage>{
     final theme=Theme.of(context);
     return SafeArea(
       child: Container(
+        height: double.infinity,
+        width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFFECE2D0),Color(0xFFE07A5F)],
