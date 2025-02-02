@@ -10,33 +10,13 @@ class HomePage extends StatelessWidget{
       child: Container(
         height: double.infinity,
         width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-              colors: [Color(0xFFECE2D0),Color(0xFFE07A5F)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight
+        color: Color(0xFFE8A391),
+        child: SingleChildScrollView(
+          child: const Scaffold(
+            drawer: ,
+            backgroundColor: Colors.transparent,
+            body:
           ),
-        ),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Center(child: Text("Welcome", style: TextStyle(fontSize: 30),)),
-              Center(
-                child: IconButton(
-                  style: IconButton.styleFrom(backgroundColor: const Color(0xFF9B2226)),
-                    onPressed: (){
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context)=> const LoginPage())
-                      );
-                    },
-                    icon: const Icon(Icons.logout)
-                ),
-              ),
-            ],
-          )
         ),
       ),
     );
