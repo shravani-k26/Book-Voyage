@@ -67,7 +67,7 @@ class _HomePageState extends State<HomePage> {
                             decoration: const InputDecoration(
                               hintText: "Search Books",
                               prefixIcon: Icon(Icons.search_sharp),
-                              contentPadding: EdgeInsets.symmetric(vertical: 10.0),
+                              contentPadding: EdgeInsets.symmetric(vertical: 12.0),
                             ),
                           ),
                         )
@@ -76,7 +76,7 @@ class _HomePageState extends State<HomePage> {
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Padding(
-                            padding: EdgeInsets.only(top: 8),
+                            padding: EdgeInsets.only(top: 10,bottom: 2),
                             child: Text('Explore Books', style: TextStyle(
                               fontSize:25, color: Color(0xFFF8F0E3),
                               fontWeight: FontWeight.bold,
