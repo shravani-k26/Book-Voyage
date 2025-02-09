@@ -1,0 +1,251 @@
+import 'dart:math';
+
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'drawer.dart';
+
+class HomeScreen extends StatefulWidget{
+  final String uid;
+  HomeScreen({super.key, required this.uid});
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final FirebaseFirestore _firestore=FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  List<Map<String, dynamic>> recommendedBooks=[];
+  bool isLoading = true;
+  @override
+  void initState() {
+    super.initState();
+    fetchRecommendations();
+  }
+  Future<void>fetchRecommendations() async{
+    try{
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(widget.uid).get();
+      if(!userDoc.exists || !userDoc.data().toString().contains('interests')){
+        setState(() {
+          isLoading=false;
+        });
+        return;
+      }
+      List<String> interests = List<String>.from(userDoc['interests']);
+      QuerySnapshot bookSnapshot = await _firestore.collection('books').get();
+      List<Map<String, dynamic>> books=bookSnapshot.docs
+        .map((doc)=> doc.data() as Map<String, dynamic>)
+        .where((book){
+        List<String> bookGenres = List<String>.from(book['genre']); // Convert Firestore array to List
+        return bookGenres.any((genre) => interests.contains(genre));
+      })
+      .toList();
+
+      books.shuffle(Random());
+      setState(() {
+        recommendedBooks=books.take(10).toList();
+        isLoading= false;
+      });
+    }catch(e){
+      print('Error fetching recommendations: $e');
+      setState(() {
+        isLoading=false;
+      });
+    }
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        backgroundColor: Colors.transparent,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+              child: Text('Most Popular Books on Book Voyage', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+            ),
+            StreamBuilder<QuerySnapshot>(
+                stream: _firestore.collection('books').snapshots(),
+                builder: (context, snapshot){
+                  if(snapshot.connectionState==ConnectionState.waiting)
+                    {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                  if(!snapshot.hasData || snapshot.data!.docs.isEmpty){
+                    return Center(child: Text('No books available'));
+                  }
+                  List<Map<String, dynamic>> books=snapshot.data!.docs.map((doc){
+                    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                    return{
+                      'title': data['title'] ?? 'Unknown Title',
+                      'author':(data['authors'] as List<dynamic>).join(', '),
+                      'cover_url': data['thumbnail']?? Image.asset("assets/images/book.png")
+                    };
+                  }).toList();
+                  books.shuffle(Random());
+                  List<Map<String, dynamic>> randomBooks = books.take(10).toList();
+                  return CarouselSlider(
+                      items: randomBooks.map((book){
+                        return Container(
+                          height: 500,
+                          width: double.infinity,
+                          margin: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                            color: Color(0xFFECE2D0),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(height: 10,),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Image.network(
+                                    book['cover_url']!,
+                                    height: 250,
+                                    width: 170,
+                                    fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                      return Image.asset(
+                                      'assets/images/book.png',
+                                      height: 250,
+                                      width: 170,
+                                      fit: BoxFit.cover,
+                                    );
+                                  }
+                                ),
+                                ),
+                                SizedBox(height: 10,),
+                                Text(
+                                book['title']!,
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                                ),
+                                SizedBox(height: 10,),
+                                Text(
+                                book['author']!,
+                                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                textAlign:
+                               TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      options: CarouselOptions(
+                    height: 350,
+                    autoPlay: true,
+                    enlargeCenterPage: true,
+                    aspectRatio: 2 / 3,
+                    enableInfiniteScroll: true,
+                    autoPlayInterval: Duration(seconds: 4),
+                    autoPlayAnimationDuration: Duration(milliseconds: 800),
+                  ),
+                  );
+                }
+            ),
+            isLoading
+            ? Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if(recommendedBooks.isNotEmpty)...[
+                          const Padding(
+                            padding:EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+                            child: Text(
+                                'Recommended for You',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: recommendedBooks.map((book){
+                                List<String> authors = List<String>.from(book['authors'] ?? []);
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        width: 100,
+                                        height: 150,
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                              image: NetworkImage(book['thumbnail']),
+                                              fit: BoxFit.cover,
+                                          ),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      SizedBox(height: 8),
+                                      SizedBox(
+                                        width: 120,
+                                        child: Text(
+                                          book['title'],
+                                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      SizedBox(width: 120,
+                                        child: Text(
+                                          authors.isNotEmpty?authors.join(', '):'Unknown Author',
+                                          style: TextStyle(fontSize: 12, color: Color(0xFFECE2D0)),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                );
+                              }).toList()
+                            ),
+                          ),
+                        ],
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+                          child: Text(
+                            'Trending Books',
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Container(
+                          height: 200,
+                          color: Colors.grey[300],
+                          child: Center(child: Text('Trending Books List Here')),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+                          child: Text(
+                            'Recently Added',
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Container(
+                          height: 200,
+                          color: Colors.grey[300],
+                          child: Center(child: Text('Recently Added Books List Here')),
+                        ),
+                      ],
+                    ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1,3 +1,4 @@
+import 'package:book_voyage_demo/auth_page.dart';
 import 'package:flutter/material.dart';
 import 'package:book_voyage_demo/login.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -63,8 +64,11 @@ class MyApp extends StatelessWidget {
           selectionColor: Color(0xFFCF6F72),
           selectionHandleColor: Color(0xFF9B2226),
         ),
+        drawerTheme: const DrawerThemeData(
+          backgroundColor:Color(0xFFECE2D0)
+        )
       ),
-      home: const LoginPage(),
+      home: Auth_Page(),
     );
   }
 }
