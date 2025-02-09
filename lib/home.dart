@@ -36,7 +36,6 @@ class _HomePageState extends State<HomePage> {
         height: double.infinity,
         width: double.infinity,
         color: Color(0xFFE8A391),
-<<<<<<< HEAD
         child: SingleChildScrollView(
           child: const Scaffold(
             drawer: ,
@@ -44,7 +43,6 @@ class _HomePageState extends State<HomePage> {
             body:
           ),
         ),
-=======
           child: Scaffold(
             key:  _scaffoldKey,
             appBar: AppBar(
