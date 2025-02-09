@@ -1,4 +1,4 @@
-import 'package:book_voyage_demo/drawer.dart';
+import 'package:book_voyage_demo/categoryBook.dart';
 import 'package:flutter/material.dart';
 
 class DiscoverPage extends StatefulWidget{
@@ -22,7 +22,12 @@ class _DiscoverPageState extends State<DiscoverPage> {
             child: Column(
               children: [
                 GestureDetector(
-                  onTap: (){},
+                  onTap: (){
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context)=>CategoryBooksPage(category: "Mystery"))
+                    );
+                  },
                   child: Padding(
                     padding: const EdgeInsets.only(top:15,bottom:8,right: 8, left: 8),
                     child: Container(
@@ -67,177 +72,209 @@ class _DiscoverPageState extends State<DiscoverPage> {
                   )
                   ),
                 ),
-                Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      width: double.infinity,
-                      height: 170,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Color(0xFFF8F0E3), // White border
-                          width: 5, // Border width
+                GestureDetector(
+                  onTap: (){
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context)=>CategoryBooksPage(category: "Romance"))
+                    );
+                  },
+                  child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: double.infinity,
+                        height: 170,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Color(0xFFF8F0E3), // White border
+                            width: 5, // Border width
+                          ),
                         ),
-                      ),
-                      child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Opacity(
-                              opacity: 0.75, // Adjust the opacity value to control transparency (0.0 to 1.0)
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Image.asset(
-                                  "assets/images/romantic.jpg",
-                                  fit: BoxFit.cover, // Make the image cover the container
+                        child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Opacity(
+                                opacity: 0.75, // Adjust the opacity value to control transparency (0.0 to 1.0)
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Image.asset(
+                                    "assets/images/romantic.jpg",
+                                    fit: BoxFit.cover, // Make the image cover the container
+                                  ),
                                 ),
                               ),
-                            ),
-                            const Center(child: Text("Romantic", style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 40,
-                                fontWeight: FontWeight.bold,
-                                shadows: [
-                                  Shadow(
-                                    blurRadius: 10.0,
-                                    color: Colors.black,
-                                    offset: Offset(3.0, 3.0),
-                                  )
-                                ]
-                            ),
-                            ),
-                            ),
-                          ]
-                      ),
-                    )
+                              const Center(child: Text("Romantic", style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.bold,
+                                  shadows: [
+                                    Shadow(
+                                      blurRadius: 10.0,
+                                      color: Colors.black,
+                                      offset: Offset(3.0, 3.0),
+                                    )
+                                  ]
+                              ),
+                              ),
+                              ),
+                            ]
+                        ),
+                      )
+                  ),
                 ),
-                Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      width: double.infinity,
-                      height: 170,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Color(0xFFF8F0E3), // White border
-                          width: 5, // Border width
+                GestureDetector(
+                  onTap: (){
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context)=>CategoryBooksPage(category: "Self Help"))
+                    );
+                  },
+                  child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: double.infinity,
+                        height: 170,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Color(0xFFF8F0E3), // White border
+                            width: 5, // Border width
+                          ),
                         ),
-                      ),
-                      child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Opacity(
-                              opacity: 0.75, // Adjust the opacity value to control transparency (0.0 to 1.0)
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Image.asset(
-                                  "assets/images/self.jpg",
-                                  fit: BoxFit.cover, // Make the image cover the container
+                        child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Opacity(
+                                opacity: 0.75, // Adjust the opacity value to control transparency (0.0 to 1.0)
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Image.asset(
+                                    "assets/images/self.jpg",
+                                    fit: BoxFit.cover, // Make the image cover the container
+                                  ),
                                 ),
                               ),
-                            ),
-                            const Center(child: Text("Self Help", style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 40,
-                                fontWeight: FontWeight.bold,
-                                shadows: [
-                                  Shadow(
-                                    blurRadius: 10.0,
-                                    color: Colors.black,
-                                    offset: Offset(3.0, 3.0),
-                                  )
-                                ]
-                            ),
-                            ),
-                            ),
-                          ]
-                      ),
-                    )
+                              const Center(child: Text("Self Help", style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.bold,
+                                  shadows: [
+                                    Shadow(
+                                      blurRadius: 10.0,
+                                      color: Colors.black,
+                                      offset: Offset(3.0, 3.0),
+                                    )
+                                  ]
+                              ),
+                              ),
+                              ),
+                            ]
+                        ),
+                      )
+                  ),
                 ),
-                Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      width: double.infinity,
-                      height: 170,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Color(0xFFF8F0E3), // White border
-                          width: 5, // Border width
+                GestureDetector(
+                  onTap: (){
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context)=>CategoryBooksPage(category: "Educational"))
+                    );
+                  },
+                  child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: double.infinity,
+                        height: 170,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Color(0xFFF8F0E3), // White border
+                            width: 5, // Border width
+                          ),
                         ),
-                      ),
-                      child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Opacity(
-                              opacity: 0.75, // Adjust the opacity value to control transparency (0.0 to 1.0)
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Image.asset(
-                                  "assets/images/educational.jpg",
-                                  fit: BoxFit.cover, // Make the image cover the container
+                        child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Opacity(
+                                opacity: 0.75, // Adjust the opacity value to control transparency (0.0 to 1.0)
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Image.asset(
+                                    "assets/images/educational.jpg",
+                                    fit: BoxFit.cover, // Make the image cover the container
+                                  ),
                                 ),
                               ),
-                            ),
-                            const Center(child: Text("Educational", style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 40,
-                                fontWeight: FontWeight.bold,
-                                shadows: [
-                                  Shadow(
-                                    blurRadius: 10.0,
-                                    color: Colors.black,
-                                    offset: Offset(3.0, 3.0),
-                                  )
-                                ]
-                            ),
-                            ),
-                            ),
-                          ]
-                      ),
-                    )
+                              const Center(child: Text("Educational", style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.bold,
+                                  shadows: [
+                                    Shadow(
+                                      blurRadius: 10.0,
+                                      color: Colors.black,
+                                      offset: Offset(3.0, 3.0),
+                                    )
+                                  ]
+                              ),
+                              ),
+                              ),
+                            ]
+                        ),
+                      )
+                  ),
                 ),
-                Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      width: double.infinity,
-                      height: 170,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Color(0xFFF8F0E3), // White border
-                          width: 5, // Border width
+                GestureDetector(
+                  onTap: (){
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context)=>CategoryBooksPage(category: "Adventure"))
+                    );
+                  },
+                  child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: double.infinity,
+                        height: 170,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Color(0xFFF8F0E3), // White border
+                            width: 5, // Border width
+                          ),
                         ),
-                      ),
-                      child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Opacity(
-                              opacity: 0.75, // Adjust the opacity value to control transparency (0.0 to 1.0)
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Image.asset(
-                                  "assets/images/adventure.jpg",
-                                  fit: BoxFit.cover, // Make the image cover the container
+                        child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Opacity(
+                                opacity: 0.75, // Adjust the opacity value to control transparency (0.0 to 1.0)
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Image.asset(
+                                    "assets/images/adventure.jpg",
+                                    fit: BoxFit.cover, // Make the image cover the container
+                                  ),
                                 ),
                               ),
-                            ),
-                            const Center(child: Text("Adventure", style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 40,
-                                fontWeight: FontWeight.bold,
-                                shadows: [
-                                  Shadow(
-                                    blurRadius: 10.0,
-                                    color: Colors.black,
-                                    offset: Offset(3.0, 3.0),
-                                  )
-                                ]
-                            ),
-                            ),
-                            ),
-                          ]
-                      ),
-                    )
+                              const Center(child: Text("Adventure", style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.bold,
+                                  shadows: [
+                                    Shadow(
+                                      blurRadius: 10.0,
+                                      color: Colors.black,
+                                      offset: Offset(3.0, 3.0),
+                                    )
+                                  ]
+                              ),
+                              ),
+                              ),
+                            ]
+                        ),
+                      )
+                  ),
                 ),
               ],
             ),
