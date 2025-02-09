@@ -129,7 +129,7 @@ class _HomePageState extends State<HomePage> {
             body: _selectedIndex==0
               ? DiscoverPage(searchQuery: _searchQuery)
                 :_selectedIndex==1
-              ?HomeScreen()
+              ?HomeScreen(uid: widget.uid)
                 :Center(child: Text("Book CLubs Page"),),
           ),
       ),
