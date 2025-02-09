@@ -36,13 +36,6 @@ class _HomePageState extends State<HomePage> {
         height: double.infinity,
         width: double.infinity,
         color: Color(0xFFE8A391),
-        child: SingleChildScrollView(
-          child: const Scaffold(
-            drawer: ,
-            backgroundColor: Colors.transparent,
-            body:
-          ),
-        ),
           child: Scaffold(
             key:  _scaffoldKey,
             appBar: AppBar(
@@ -139,7 +132,6 @@ class _HomePageState extends State<HomePage> {
               ?HomeScreen(uid: widget.uid)
                 :Center(child: Text("Book CLubs Page"),),
           ),
->>>>>>> recommendation
       ),
     );
   }
