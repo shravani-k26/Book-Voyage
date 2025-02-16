@@ -1,3 +1,4 @@
+import 'package:book_voyage_demo/bookdetails.dart';
 import 'package:book_voyage_demo/categoryBook.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -70,19 +71,31 @@ class _DiscoverPageState extends State<DiscoverPage> {
                             elevation: 4,
                             shadowColor: Colors.grey.withOpacity(0.6),
                             borderRadius: BorderRadius.circular(12),
-                            child: ListTile(
-                                leading: Container(
-                                  height: 150,
-                                  child: Image.network(
-                                    data['thumbnail'] ?? 'https://via.placeholder.com/50',
-                                    fit: BoxFit.cover,
+                            child: InkWell(
+                              onTap: (){
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => BookDetailsPage(
+                                      bookId: books[index].id, // Pass the document ID
+                                    ),
                                   ),
-                                ),
-                                title: Text(
-                                  data.containsKey('title') ? data['title'] : 'Unknown Title',
-                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: Text(data.containsKey('authors') ? (data['authors'] as List<dynamic>).join(", ") : "Unknown Author"),
+                                );
+                              },
+                              child: ListTile(
+                                  leading: Container(
+                                    height: 150,
+                                    child: Image.network(
+                                      data['thumbnail'] ?? 'https://via.placeholder.com/50',
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    data.containsKey('title') ? data['title'] : 'Unknown Title',
+                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  ),
+                                  subtitle: Text(data.containsKey('authors') ? (data['authors'] as List<dynamic>).join(", ") : "Unknown Author"),
+                              ),
                             ),
                           ),
                         );

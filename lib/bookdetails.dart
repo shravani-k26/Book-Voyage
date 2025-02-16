@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class BookDetailsPage extends StatefulWidget{
   final String bookId;
@@ -16,6 +17,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
   bool isPurchased = false;
   bool isFree=true;
   bool isExpanded = false;
+  bool showReadMore = false;
   num averageRating = 0.0;
   int ratingCount = 0;
   Map<String, dynamic>? bookData;
@@ -113,17 +115,17 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
 
     // Add full stars
     for (int i = 0; i < fullStars; i++) {
-      stars.add(Icon(Icons.star, color: Colors.amber[300], size: 26.0));
+      stars.add(Icon(Icons.star, color: Colors.amber[400], size: 26.0));
     }
 
     // Add half star if necessary
     if (hasHalfStar) {
-      stars.add(Icon(Icons.star_half, color: Colors.amber[300], size: 26.0));
+      stars.add(Icon(Icons.star_half, color: Colors.amber[400], size: 26.0));
     }
 
     // Fill remaining stars with empty outline
     while (stars.length < 5) {
-      stars.add(Icon(Icons.star_border, color: Colors.amber[300], size: 26.0));
+      stars.add(Icon(Icons.star_border, color: Colors.amber[400], size: 26.0));
     }
 
     return stars;
@@ -221,14 +223,47 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
                                       'Author: ${authorsText ?? 'Unknown'}',
                                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
                                     ),
+                                    const SizedBox(height: 10,),
+                                    CircleAvatar(
+                                      backgroundColor: const Color(0xFFF8F0E3),
+                                      child: IconButton(
+                                        icon: Icon(
+                                          isFavorite ? Icons.favorite: Icons.favorite_border,
+                                          color: isFavorite? Colors.red : Colors.black,
+                                        ),
+                                        onPressed: ()async{
+                                          if(isFavorite){
+                                           await removeFromFavorites();
+                                           Fluttertoast.showToast(
+                                             msg: "Removed from Shelf",
+                                             toastLength: Toast.LENGTH_SHORT,
+                                             backgroundColor: Color(0xFFECE2D0).withOpacity(0.9),
+                                             textColor:Colors.black,
+                                           );
+                                          }
+                                          else{
+                                            await addToFavorites();
+                                            Fluttertoast.showToast(
+                                              msg: "Added to Shelf",
+                                              toastLength: Toast.LENGTH_SHORT,
+                                              backgroundColor: Color(0xFFECE2D0).withOpacity(0.9),
+                                              textColor:Colors.black ,
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    )
                                   ],
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        Container(
-                          color: Color(0xFFECE2D0).withOpacity(0.5),
+                      Container(
+                          decoration: BoxDecoration(
+                            color:Color(0xFFECE2D0),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                           child: Center(
                             child: Column(
                               mainAxisSize: MainAxisSize.min, // Ensures minimal vertical space is used
@@ -238,16 +273,44 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
                                   mainAxisAlignment: MainAxisAlignment.center, // Centers the stars
                                   children: _buildStarRating(averageRating),
                                 ),
-                                Text('$averageRating',style: const TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w400),),
-                                const SizedBox(height: 8),
+                                Text('$averageRating',style: const TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold),),
+                                const SizedBox(height: 5),
                                 Text(
                                   "($ratingCount ratings)",
                                   style: const TextStyle(fontSize: 16, color: Colors.black,fontWeight: FontWeight.w400),
+                                ),
+                                const SizedBox(height: 5),
+                              ],
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 20,),
+                      InkWell(
+                        onTap: (){
+
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color:Color(0xFF9B2226),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min, // Ensures minimal vertical space is used
+                              children: [
+                                 Padding(
+                                   padding: const EdgeInsets.all(8.0),
+                                   child: Image.asset('assets/images/books.png',height: 26,),
+                                 ),
+                                const Padding(
+                                  padding: EdgeInsets.only(top:2, bottom: 8, right: 8,left: 8),
+                                  child: Text('Preview', style: TextStyle(color:Color(0xFFECE2D0),fontSize: 14, fontWeight: FontWeight.bold),),
                                 ),
                               ],
                             ),
                           ),
                         ),
+                      ),
                       const SizedBox(height: 16),
                       const Row(
                         children: [
@@ -281,9 +344,53 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
-                          child: Text(
-                            bookData?['description'] ?? 'No description available.',
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              LayoutBuilder(
+                                  builder: (context, constraints){
+                                    final span = TextSpan(
+                                      text: bookData?['description'] ?? 'No description available.',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    );
+                                    final textPainter = TextPainter(
+                                      text: span,
+                                      maxLines: 10,
+                                      textDirection: TextDirection.ltr,
+                                    );
+                                    textPainter.layout(maxWidth: constraints.maxWidth);
+                                    showReadMore = textPainter.didExceedMaxLines;
+                                    return Text(
+                                      bookData?['description'] ?? 'No description available.',
+                                      maxLines: isExpanded ? null : 10,
+                                      overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    );
+                                  }
+                              ),
+                              if (showReadMore)
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      isExpanded = !isExpanded;
+                                    });
+                                  },
+                                  child: Text(
+                                    isExpanded ? "Read Less" : "Read More..",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF9B2226),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                       ),
@@ -294,7 +401,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
             ),
           bottomNavigationBar: Container(
             height: 70,
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 5.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                  children: [
@@ -302,10 +409,21 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
                      Expanded(
                        child: ElevatedButton(
                          onPressed: (){},
-                         child: const Text("Buy Now"),
                          style: ElevatedButton.styleFrom(
+                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                           backgroundColor: Color(0xFF9B2226),
                            minimumSize: Size(double.infinity, 50), // Full-width button
+                         ).copyWith(
+                           overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                                 (Set<WidgetState> states) {
+                               if (states.contains(WidgetState.pressed)) {
+                                 return Color(0xFFE07A5F).withOpacity(0.2); // Splash effect color
+                               }
+                               return null; // Default splash color
+                             },
+                           ),
                          ),
+                         child: const Text("Buy Now", style: TextStyle(color: Colors.white),),
                        ),
                      ),
                    if (isPurchased || isFree)
@@ -320,6 +438,15 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                              padding: EdgeInsets.symmetric(vertical: 16),
                              backgroundColor: Color(0xFF9B2226),
+                           ).copyWith(
+                             overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                                   (Set<WidgetState> states) {
+                                 if (states.contains(WidgetState.pressed)) {
+                                   return Color(0xFFE07A5F).withOpacity(0.2); // Splash effect color
+                                 }
+                                 return null; // Default splash color
+                               },
+                             ),
                            ),
                          ),
                        ),
@@ -336,6 +463,15 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                              padding: EdgeInsets.symmetric(vertical: 16),
                              backgroundColor: Color(0xFF9B2226)
+                           ).copyWith(
+                             overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                                   (Set<WidgetState> states) {
+                                 if (states.contains(WidgetState.pressed)) {
+                                   return Color(0xFFE07A5F).withOpacity(0.2); // Splash effect color
+                                 }
+                                 return null; // Default splash color
+                               },
+                             ),
                            ),
                          ),
                        ),

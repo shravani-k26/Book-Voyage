@@ -1,3 +1,4 @@
+import 'package:book_voyage_demo/favorites.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -5,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'login.dart';
 
 class SideNavigation extends StatefulWidget{
+  const SideNavigation({super.key});
+
   @override
   State<SideNavigation> createState() => _SideNavigationState();
 }
@@ -71,14 +74,32 @@ class _SideNavigationState extends State<SideNavigation> {
               ),
             ),
           ),
+          const SizedBox(height: 20),
+          Material(
+            color:Color(0xFFECE2D0),
+            elevation: 0.5,
+            shadowColor: Color(0xFFE07A5F),
+            child: ListTile(
+              leading: Image.asset('assets/images/shelf.png', height: 28,),
+              title: const Text('Your Shelf'),
+              onTap: (){
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => FavoritesPage()),
+                );
+              },
+            ),
+          ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
                   onPressed: ()=>_logout(context),
                   icon: Icon(Icons.logout)
-              )
+              ),
+              const Text('Logout')
             ],
-          )
+          ),
         ],
       ),
     );

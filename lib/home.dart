@@ -94,6 +94,24 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                     ),
+                  if (_selectedIndex==1)
+                    const Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 10,bottom: 2),
+                          child: Text("Let's begin with Journey!!", style: TextStyle(
+                              fontSize:25, color: Color(0xFFF8F0E3),
+                              fontWeight: FontWeight.bold,
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 8.0,
+                                  color: Colors.black45,
+                                  offset: Offset(2.0, 2.0),
+                                ),]),),
+                        ),
+                      ),
+                    ),
                 ],
               ),
               actions: _selectedIndex==0 ? [
