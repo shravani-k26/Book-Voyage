@@ -19,15 +19,20 @@ class _HomePageState extends State<HomePage> {
   User? user=FirebaseAuth.instance.currentUser;
   int _selectedIndex=1;
   final TextEditingController _searchController = TextEditingController();
+  final ValueNotifier<String> _searchQueryNotifier = ValueNotifier<String>('');
   bool _isSearchActive=false;
-  String _searchQuery='';
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      _isSearchActive=false;
-      _searchQuery='';
+      _isSearchActive = false;
+      _searchController.clear();
+      _searchQueryNotifier.value = '';
     });
+  }
+  Future<String?> getUserId() async {
+    await Future.delayed(Duration(seconds: 1)); // Simulate auth delay
+    return FirebaseAuth.instance.currentUser?.uid;
   }
   @override
   Widget build(BuildContext context) {
@@ -61,7 +66,7 @@ class _HomePageState extends State<HomePage> {
                             controller: _searchController,
                             onChanged: (query){
                               setState(() {
-                                _searchQuery=query;
+                                _searchQueryNotifier.value = query.toLowerCase();
                               });
                             },
                             decoration: const InputDecoration(
@@ -96,10 +101,11 @@ class _HomePageState extends State<HomePage> {
                   icon: Icon(_isSearchActive?Icons.close:Icons.search),
                   onPressed: (){
                     setState(() {
-                      _isSearchActive=!_isSearchActive;
                       if(_isSearchActive){
-                        _searchQuery='';
+                        _searchController.clear();
+                        _searchQueryNotifier.value = '';
                       }
+                      _isSearchActive=!_isSearchActive;
                     });
                   },
                 )
@@ -111,7 +117,7 @@ class _HomePageState extends State<HomePage> {
                 items: const [
                   BottomNavigationBarItem(icon: Icon(Icons.search),label: 'Discover'),
                   BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-                  BottomNavigationBarItem(icon: Icon(Icons.book),label: 'Book Clubs')
+                  BottomNavigationBarItem(icon: Icon(Icons.people),label: 'Book Clubs')
                 ],
               selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
               showUnselectedLabels: true,
@@ -127,9 +133,9 @@ class _HomePageState extends State<HomePage> {
             drawer: SideNavigation(),
             backgroundColor: Colors.transparent,
             body: _selectedIndex==0
-              ? DiscoverPage(searchQuery: _searchQuery)
+              ? DiscoverPage(searchQueryNotifier: _searchQueryNotifier)
                 :_selectedIndex==1
-              ?HomeScreen(uid: widget.uid)
+              ?HomeScreen(uid: FirebaseAuth.instance.currentUser?.uid ?? '')
                 :Center(child: Text("Book CLubs Page"),),
           ),
       ),

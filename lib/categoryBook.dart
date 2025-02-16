@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:book_voyage_demo/bookdetails.dart';
 
 class CategoryBooksPage extends StatefulWidget{
   final String category;
@@ -72,7 +73,16 @@ class _CategoryBooksPageState extends State<CategoryBooksPage> {
                       itemBuilder: (context, index){
                         var book=books[index];
                         return GestureDetector(
-                          onTap: (){},
+                          onTap: (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BookDetailsPage(
+                                  bookId: book.id, // Pass book document ID
+                                ),
+                              ),
+                            );
+                          },
                           child: Card(
                             elevation: 3,
                             child: Column(
