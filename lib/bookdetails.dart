@@ -1,3 +1,4 @@
+import 'package:book_voyage_demo/webPage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,6 +21,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
   bool showReadMore = false;
   num averageRating = 0.0;
   int ratingCount = 0;
+  String? previewUrl;
   Map<String, dynamic>? bookData;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -36,11 +38,12 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
     );
     _fetchBookDetails();
   }
-  Future<void>_fetchBookDetails()async{
+  Future<void>_fetchBookDetails() async {
     DocumentSnapshot bookSnapshot=await _firestore.collection('books').doc(widget.bookId).get();
     if(bookSnapshot.exists){
       setState(() {
         bookData=bookSnapshot.data() as Map<String, dynamic>;
+        previewUrl = bookData?['previewLink'];
         isFree = bookData?['isfree'] ?? false;
         averageRating=bookData?['rating']??0.0;
         ratingCount = bookSnapshot['ratingCount'] ?? 0;
@@ -48,6 +51,23 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
       _checkIfFavorite();
       _checkIfPurchased();
       _animationController.forward();
+    }
+  }
+  void _openPreview() {
+    if (previewUrl != null && previewUrl!.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BookPreviewWebView(previewUrl: previewUrl!),
+        ),
+      );
+    } else {
+      Fluttertoast.showToast(
+        msg: "No preview available for this book.",
+        toastLength: Toast.LENGTH_SHORT,
+        backgroundColor: Colors.grey,
+        textColor: Colors.white,
+      );
     }
   }
   void _checkIfFavorite() async{
@@ -287,7 +307,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
                       const SizedBox(height: 20,),
                       InkWell(
                         onTap: (){
-
+                          _openPreview();
                         },
                         child: Container(
                           decoration: BoxDecoration(

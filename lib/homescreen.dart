@@ -348,10 +348,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           data['book_id'] = doc.id;
                           return data;
                         }).where((book) => favoriteBookIds.contains(book['book_id'])).toList();
+                        favoriteBooks.shuffle(Random());
+                        List<Map<String, dynamic>> fBooks = favoriteBooks.take(10).toList();
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (favoriteBooks.isNotEmpty) ...[
+                            if (fBooks.isNotEmpty) ...[
                               const Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
                                 child: Text(
@@ -362,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: Row(
-                                  children: favoriteBooks.map((book) {
+                                  children: fBooks.map((book) {
                                     return Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Column(

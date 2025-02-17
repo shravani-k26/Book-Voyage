@@ -1,0 +1,37 @@
+// lib/book_preview_webview.dart
+import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+
+class BookPreviewWebView extends StatefulWidget {
+  final String previewUrl;
+  const BookPreviewWebView({super.key, required this.previewUrl});
+
+  @override
+  State<BookPreviewWebView> createState() => _BookPreviewWebViewState();
+}
+
+class _BookPreviewWebViewState extends State<BookPreviewWebView> {
+  late final WebViewController webViewController;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the WebViewController with the provided URL
+    webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..loadRequest(Uri.parse(widget.previewUrl)); // Use the preview URL here
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Book Preview"),
+        backgroundColor: Colors.blueGrey,
+      ),
+      body: WebViewWidget(
+        controller: webViewController, // Display WebView
+      ),
+    );
+  }
+}
