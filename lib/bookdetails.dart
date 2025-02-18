@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import 'openbook.dart';
+
 class BookDetailsPage extends StatefulWidget{
   final String bookId;
   const BookDetailsPage({super.key, required this.bookId});
@@ -22,6 +24,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
   num averageRating = 0.0;
   int ratingCount = 0;
   String? previewUrl;
+  String? pdfUrl;
   Map<String, dynamic>? bookData;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -44,6 +47,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
       setState(() {
         bookData=bookSnapshot.data() as Map<String, dynamic>;
         previewUrl = bookData?['previewLink'];
+        pdfUrl=bookData?['pdf_url'];
         isFree = bookData?['isfree'] ?? false;
         averageRating=bookData?['rating']??0.0;
         ratingCount = bookSnapshot['ratingCount'] ?? 0;
@@ -51,6 +55,26 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
       _checkIfFavorite();
       _checkIfPurchased();
       _animationController.forward();
+    }
+  }
+  void _openBook() {
+    if (pdfUrl != null && pdfUrl!.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PdfViewerPage(
+              pdfStoragePath: pdfUrl!,
+              bookId: widget.bookId,
+          ),
+        ),
+      );
+    } else {
+      Fluttertoast.showToast(
+        msg: "PDF not available for this book.",
+        toastLength: Toast.LENGTH_SHORT,
+        backgroundColor: Colors.grey,
+        textColor: Colors.white,
+      );
     }
   }
   void _openPreview() {
@@ -451,7 +475,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
                        child: Padding(
                          padding: const EdgeInsets.only(right: 4.0),
                          child: ElevatedButton.icon(
-                           onPressed: (){},
+                           onPressed: _openBook,
                            icon: const Icon(Icons.book, color: Colors.white),
                            label: const Text("Read Book",style: TextStyle(color: Colors.white) ),
                            style: ElevatedButton.styleFrom(

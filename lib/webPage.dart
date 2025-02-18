@@ -19,18 +19,20 @@ class _BookPreviewWebViewState extends State<BookPreviewWebView> {
     // Initialize the WebViewController with the provided URL
     webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(Uri.parse(widget.previewUrl)); // Use the preview URL here
+      ..loadRequest(Uri.parse(widget.previewUrl));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Book Preview"),
-        backgroundColor: Colors.blueGrey,
-      ),
-      body: WebViewWidget(
-        controller: webViewController, // Display WebView
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Book Preview"),
+          backgroundColor: Color(0xFFE07A5F),
+        ),
+        body: WebViewWidget(
+          controller: webViewController, // Display WebView
+        ),
       ),
     );
   }
