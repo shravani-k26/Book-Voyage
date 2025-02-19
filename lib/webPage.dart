@@ -1,4 +1,3 @@
-// lib/book_preview_webview.dart
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -28,7 +27,7 @@ class _BookPreviewWebViewState extends State<BookPreviewWebView> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Book Preview"),
-          backgroundColor: Color(0xFFE07A5F),
+          backgroundColor: const Color(0xFFE07A5F),
         ),
         body: WebViewWidget(
           controller: webViewController, // Display WebView

@@ -1,7 +1,6 @@
 import 'package:book_voyage_demo/home.dart';
 import 'package:book_voyage_demo/login.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
