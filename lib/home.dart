@@ -1,7 +1,7 @@
+import 'package:book_voyage_demo/bookclub.dart';
 import 'package:book_voyage_demo/discover.dart';
 import 'package:book_voyage_demo/drawer.dart';
 import 'package:book_voyage_demo/homescreen.dart';
-import 'package:book_voyage_demo/login.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -112,6 +112,25 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
+                  if (_selectedIndex==2)
+                    const Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 10,bottom: 2),
+                          child: Text("Your Book Clubs", style: TextStyle(
+                              fontSize:25, color: Color(0xFFF8F0E3),
+                              fontWeight: FontWeight.bold,
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 8.0,
+                                  color: Colors.black45,
+                                  offset: Offset(2.0, 2.0),
+                                ),]),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
               actions: _selectedIndex==0 ? [
@@ -154,7 +173,7 @@ class _HomePageState extends State<HomePage> {
               ? DiscoverPage(searchQueryNotifier: _searchQueryNotifier)
                 :_selectedIndex==1
               ?HomeScreen(uid: FirebaseAuth.instance.currentUser?.uid ?? '')
-                :Center(child: Text("Book CLubs Page"),),
+                :BookClubListPage(userId: FirebaseAuth.instance.currentUser?.uid ?? '')
           ),
       ),
     );

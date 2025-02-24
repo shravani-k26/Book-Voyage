@@ -8,9 +8,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class PdfViewerPage extends StatefulWidget {
-  final String pdfStoragePath; // gs://path/to/your/file.pdf
+  final String pdfStoragePath;
   final String bookId;
-
 
   const PdfViewerPage({super.key, required this.pdfStoragePath, required this.bookId});
 
@@ -21,135 +20,210 @@ class PdfViewerPage extends StatefulWidget {
 class _PdfViewerPageState extends State<PdfViewerPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   int currentPageIndex = 0;
-  bool isBookmarked = false;
-  String? localPdfPath; // Local path for downloaded PDF
+  List<int> bookmarks = [];
+  String? localPdfPath;
+  PDFViewController? pdfViewController; // PDFViewController to manage page navigation
 
   @override
   void initState() {
     super.initState();
-    _checkIfBookmarked().then((_) => _downloadAndSavePdf());
+    _downloadAndSavePdf();
+    _loadBookmarks();
   }
 
-  // Download PDF from Firebase Storage and save locally
   Future<void> _downloadAndSavePdf() async {
     try {
       final ref = FirebaseStorage.instance.refFromURL(widget.pdfStoragePath);
-      final url = await ref.getDownloadURL();
-
-      // Get the app's temporary directory
       final tempDir = await getTemporaryDirectory();
       final tempFile = File('${tempDir.path}/temp.pdf');
-      // Download the file
       await ref.writeToFile(tempFile);
-
       setState(() {
-        localPdfPath = tempFile.path; // Store the local path
+        localPdfPath = tempFile.path;
       });
     } catch (e) {
-      print('Error downloading PDF: $e');
       Fluttertoast.showToast(msg: "Error loading PDF");
     }
   }
-  Future<void>_addBookmark() async{
-   try{
-     String uid = _auth.currentUser?.uid ?? "";
-     await FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .collection('bookmarks')
-      .doc(widget.bookId)
-      .set(
-       {
-         'pageIndex': currentPageIndex,
-         'timestamp': FieldValue.serverTimestamp(),
-       }
-     );
-     setState(() {
-       isBookmarked = true;
-     });
-     Fluttertoast.showToast(msg: "Bookmark Added!");
-   }
-   catch(e){
-     print('Error adding bookmark: $e');
-     Fluttertoast.showToast(msg: "Error adding bookmark");
-   }
-  }
-  Future<void>_removeBookmark() async{
-    try{
+
+  Future<void> _toggleBookmark() async {
+    try {
       String uid = _auth.currentUser?.uid ?? "";
-      await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('bookmarks')
-        .doc(widget.bookId)
-        .delete();
-      setState(() {
-        isBookmarked=false;
-      });
-      Fluttertoast.showToast(msg: "Book Removed!");
+      if (bookmarks.contains(currentPageIndex)) {
+        bookmarks.remove(currentPageIndex);
+        Fluttertoast.showToast(msg: "Bookmark Removed!");
+      } else {
+        bookmarks.add(currentPageIndex);
+        Fluttertoast.showToast(msg: "Bookmark Added!");
+      }
+
+      if (bookmarks.isEmpty) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection('bookmarks')
+            .doc(widget.bookId)
+            .delete();
+      } else {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection('bookmarks')
+            .doc(widget.bookId)
+            .set({'bookmarks': bookmarks, 'timestamp': FieldValue.serverTimestamp()});
+      }
+      setState(() {});
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Error toggling bookmark");
     }
-    catch(e){
-      print('Error removing bookmark: $e');
+  }
+
+  Future<void> _loadBookmarks() async {
+    try {
+      String uid = _auth.currentUser?.uid ?? "";
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('bookmarks')
+          .doc(widget.bookId)
+          .get();
+      if (snapshot.exists) {
+        Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
+        bookmarks = List<int>.from(data?['bookmarks'] ?? []);
+        setState(() {
+          currentPageIndex = bookmarks.isNotEmpty ? bookmarks.last : 0;
+        });
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Failed to load bookmarks");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          iconTheme: const IconThemeData(
+            size: 30,
+            color: Color(0xFFECE2D0),
+            shadows: [
+              Shadow(
+                blurRadius: 2.0,
+                color: Colors.black45,
+                offset: Offset(1.0, 1.0),
+              ),
+            ],),
+          backgroundColor: const Color(0xFFE07A5F),
+          title: const Text('Book Viewer', style: TextStyle(
+              color: Color(0xFFF8F0E3),
+              shadows: [
+                Shadow(
+                  blurRadius: 8.0,
+                  color: Colors.black45,
+                  offset: Offset(2.0, 2.0),
+                ),]
+          ),),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.bookmarks),
+              onPressed: _showBookmarksDialog,
+            ),
+          ],
+        ),
+        body: localPdfPath == null
+            ? const Center(child: CircularProgressIndicator())
+            : PDFView(
+          filePath: localPdfPath,
+          defaultPage: currentPageIndex,
+          onViewCreated: (controller) {
+            pdfViewController = controller; // Store PDFViewController
+          },
+          onPageChanged: (int? current, int? total) {
+            setState(() {
+              currentPageIndex = current ?? 0;
+            });
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _toggleBookmark,
+          backgroundColor: bookmarks.contains(currentPageIndex) ? const Color(0xFF9B2226) : const Color(0xFFE07A5F),
+          child: Icon(
+            bookmarks.contains(currentPageIndex) ? Icons.bookmark : Icons.bookmark_border,
+            color: const Color(0xFFFEF7DC),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showBookmarksDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFFEF7DC),
+          title: const Text("Bookmarks"),
+          content: bookmarks.isEmpty
+              ? const Text("No bookmarks available")
+              : SizedBox(
+            height: 200,
+            width: 300,
+            child: ListView.builder(
+              itemCount: bookmarks.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text("Page ${bookmarks[index] + 1}"),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Color(0xFF9B2226)),
+                    onPressed: () {
+                      _removeBookmark(bookmarks[index]);
+                      Navigator.pop(context);
+                      _showBookmarksDialog(); // Refresh dialog
+                    },
+                  ),
+                  onTap: () {
+                    _goToBookmark(bookmarks[index]); // Navigate to bookmarked page
+                    Navigator.pop(context); // Close the dialog
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close", style: TextStyle(color: Color(0xFF9B2226)),),
+            )
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _removeBookmark(int pageIndex) async {
+    try {
+      String uid = _auth.currentUser?.uid ?? "";
+      bookmarks.remove(pageIndex);
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('bookmarks')
+          .doc(widget.bookId)
+          .set({'bookmarks': bookmarks, 'timestamp': FieldValue.serverTimestamp()});
+
+      setState(() {});
+      Fluttertoast.showToast(msg: "Bookmark Removed!");
+    } catch (e) {
       Fluttertoast.showToast(msg: "Error removing bookmark");
     }
   }
-  Future<void>_checkIfBookmarked() async{
-    try{
-      String uid = _auth.currentUser?.uid ?? "";
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('bookmarks')
-        .doc(widget.bookId)
-        .get();
-      if (snapshot.exists) {
-        Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
-        int savedPageIndex = data?['pageIndex'] ?? 0;
-        setState(() {
-          currentPageIndex = savedPageIndex;
-          isBookmarked = true;
-        });
-      }
+
+  void _goToBookmark(int pageIndex) {
+    if (pdfViewController != null) {
+      pdfViewController!.setPage(pageIndex); // Navigate to the selected page
+      setState(() {
+        currentPageIndex = pageIndex; // Update current page index
+      });
     }
-    catch(e){
-      print('Error Checking Bookmarks: $e');
-      Fluttertoast.showToast(msg: "Failed to check bookmark");
-    }
-  }
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFE07A5F),
-        title: const Text('PDF Viewer'),
-        actions: [
-          IconButton(
-            icon: Icon(
-            isBookmarked ? Icons.bookmark:Icons.bookmark_border,
-            color: isBookmarked ? Color(0xFF9B2226):Color(0xFFFEF7DC),
-          ),
-            onPressed: (){
-                if(isBookmarked){
-                  _removeBookmark();
-                }
-                else{
-                  _addBookmark();
-                }
-              },
-          )
-        ],
-      ),
-      body: localPdfPath == null
-          ? const Center(child: CircularProgressIndicator())
-          : PDFView(
-        filePath: localPdfPath, // Use the local file path
-        defaultPage: currentPageIndex,
-        onPageChanged: (int? current, int? total) {
-          setState(() {
-            currentPageIndex = current ?? 0;
-          });
-        },
-      ),
-    );
   }
 }

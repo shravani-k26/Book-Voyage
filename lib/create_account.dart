@@ -12,6 +12,7 @@ class _CreateAccountState extends State<CreateAccountPage>{
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+
   final _nameController=TextEditingController();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -25,6 +26,7 @@ class _CreateAccountState extends State<CreateAccountPage>{
     setState(() {
       isLoading = true; // Start loading
     });
+    const String defaultProfileImageUrl = "https://i.pinimg.com/736x/6c/eb/75/6ceb75052855a7c75e8134396f801f64.jpg";
     try{
       if (_nameController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -118,6 +120,7 @@ class _CreateAccountState extends State<CreateAccountPage>{
         'username':_usernameController.text,
         'email': _emailController.text,
         'birthday': Timestamp.fromDate(birthdayDate),
+        'profile_image': defaultProfileImageUrl,
       });
 
       await _firestore.collection('usernames').doc(_usernameController.text).set({
