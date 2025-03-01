@@ -312,7 +312,7 @@ class _BookClubDetailsPageState extends State<BookClubDetailsPage> {
                     style: const TextStyle(color: Colors.white),
                   ),
               ),
-            )
+            ),
         ],
       ),
     );

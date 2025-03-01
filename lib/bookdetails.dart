@@ -1,3 +1,4 @@
+import 'package:book_voyage_demo/audiobook.dart';
 import 'package:book_voyage_demo/webPage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -56,6 +57,18 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
       _checkIfPurchased();
       _animationController.forward();
     }
+  }
+  void openAudiobookPage() {
+    String uid = _auth.currentUser?.uid ?? "";
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AudiobookTTSPage(
+          bookId: widget.bookId,
+          userId: uid,
+        ),
+      ),
+    );
   }
   void _openBook() {
     if (pdfUrl != null && pdfUrl!.isNotEmpty) {
@@ -500,7 +513,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
                        child: Padding(
                          padding: const EdgeInsets.only(left: 4.0),
                          child: ElevatedButton.icon(
-                           onPressed: (){},
+                           onPressed: openAudiobookPage,
                            icon: const Icon(Icons.headphones, color: Colors.white),
                            label: const Text("Audio Book", style: TextStyle(color: Colors.white),),
                            style: ElevatedButton.styleFrom(
