@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -19,6 +20,7 @@ class AudiobookTTSPage extends StatefulWidget {
 }
 
 class _AudiobookTTSPageState extends State<AudiobookTTSPage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   FlutterTts flutterTts = FlutterTts();
   PDFViewController? pdfController;
   String localPdfPath = '';
@@ -26,6 +28,7 @@ class _AudiobookTTSPageState extends State<AudiobookTTSPage> {
   int endPage = 0;
   int currentPage = 0;
   bool isPlaying = false;
+  bool audiobook=false;
   List<int> bookmarks = [];
 
   @override
@@ -60,6 +63,7 @@ class _AudiobookTTSPageState extends State<AudiobookTTSPage> {
         if (doc["audiobook"] == true) {
           String pdfUrl = doc["pdf_url"];
           setState(() {
+            audiobook=doc['audiobook'];
             startPage = doc["startPage"]-1 ?? 0;
             endPage = doc["endPage"]-1 ?? 0;
             currentPage = startPage; // Initialize currentPage with startPage
@@ -68,6 +72,7 @@ class _AudiobookTTSPageState extends State<AudiobookTTSPage> {
           downloadPDF(pdfUrl);
         } else {
           Fluttertoast.showToast(msg: "Audiobook not available for this book");
+          isPlaying=false;
         }
       }
     } catch (e) {
@@ -134,7 +139,6 @@ class _AudiobookTTSPageState extends State<AudiobookTTSPage> {
           .collection('audiobookBookmarks')
           .doc(widget.bookId)
           .get();
-
       if (snapshot.exists) {
         Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
         bookmarks = List<int>.from(data?['pages'] ?? []);
@@ -166,8 +170,10 @@ class _AudiobookTTSPageState extends State<AudiobookTTSPage> {
   void _toggleBookmark() async {
     if (bookmarks.contains(currentPage)) {
       bookmarks.remove(currentPage);
+      Fluttertoast.showToast(msg: "Bookmark Removed!");
     } else {
       bookmarks.add(currentPage);
+      Fluttertoast.showToast(msg: "Bookmark Added!");
     }
     if (bookmarks.isEmpty) {
       // Remove the document if there are no bookmarks left
@@ -187,6 +193,23 @@ class _AudiobookTTSPageState extends State<AudiobookTTSPage> {
           .set({'pages': bookmarks}, SetOptions(merge: true));
     }
     setState(() {});
+  }
+  Future<void> _removeBookmark(int pageIndex) async {
+    try {
+      String uid = _auth.currentUser?.uid ?? "";
+      bookmarks.remove(pageIndex);
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userId)
+          .collection('bookmarks')
+          .doc(widget.bookId)
+          .delete();
+
+      setState(() {});
+      Fluttertoast.showToast(msg: "Bookmark Removed!");
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Error removing bookmark");
+    }
   }
   void _showBookmarksDialog() {
     showDialog(
@@ -208,7 +231,7 @@ class _AudiobookTTSPageState extends State<AudiobookTTSPage> {
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Color(0xFF9B2226)),
                     onPressed: () {
-                      _toggleBookmark();
+                      _removeBookmark(bookmarks[index]);
                       Navigator.pop(context);
                       _showBookmarksDialog();
                     },
@@ -278,7 +301,7 @@ class _AudiobookTTSPageState extends State<AudiobookTTSPage> {
         body: Column(
           children: [
             Expanded(
-              child: localPdfPath.isEmpty
+              child: localPdfPath.isEmpty && audiobook
                   ? Center(child: CircularProgressIndicator())
                   : PDFView(
                 filePath: localPdfPath,

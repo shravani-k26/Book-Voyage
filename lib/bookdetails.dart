@@ -1,4 +1,5 @@
 import 'package:book_voyage_demo/audiobook.dart';
+import 'package:book_voyage_demo/payment_services.dart';
 import 'package:book_voyage_demo/webPage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -24,11 +25,15 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
   bool showReadMore = false;
   num averageRating = 0.0;
   int ratingCount = 0;
+  int bookPrice = 0;
+  String userId = "";
+  String userEmail = "";
   String? previewUrl;
   String? pdfUrl;
   Map<String, dynamic>? bookData;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  final PaymentService _paymentService = PaymentService();
   @override
   void initState(){
     super.initState();
@@ -41,6 +46,9 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
       curve: Curves.easeInOut,
     );
     _fetchBookDetails();
+    _fetchUserDetails();
+    _checkIfPurchased();
+    _checkIfFavorite();
   }
   Future<void>_fetchBookDetails() async {
     DocumentSnapshot bookSnapshot=await _firestore.collection('books').doc(widget.bookId).get();
@@ -52,10 +60,26 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
         isFree = bookData?['isfree'] ?? false;
         averageRating=bookData?['rating']??0.0;
         ratingCount = bookSnapshot['ratingCount'] ?? 0;
+        bookPrice=bookData?['price'];
       });
       _checkIfFavorite();
       _checkIfPurchased();
       _animationController.forward();
+    }
+  }
+  void _fetchUserDetails() async {
+    var currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      setState(() {
+        userId = currentUser.uid;
+      });
+
+      var userSnapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      if (userSnapshot.exists) {
+        setState(() {
+          userEmail = userSnapshot.data()?['email'] ?? "";
+        });
+      }
     }
   }
   void openAudiobookPage() {
@@ -130,8 +154,18 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
         .collection('purchases')
         .doc(widget.bookId)
         .get();
+    if (purchaseSnapshot.exists) {
+      var data = purchaseSnapshot.data() as Map<String, dynamic>?; // Ensure it's a Map
+      if (data != null && data.containsKey('isPurchased') && data['isPurchased'] == true) {
+        setState(() {
+          isPurchased = true;
+        });
+      }
+    }
+  }
+  void _handlePaymentSuccess() {
     setState(() {
-      isPurchased = purchaseSnapshot.exists;
+      isPurchased = true;
     });
   }
   Future<void> addToFavorites() async {
@@ -465,7 +499,16 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
                    if (!isFree && !isPurchased)
                      Expanded(
                        child: ElevatedButton(
-                         onPressed: (){},
+                         onPressed: (){
+                           _paymentService.processPayment(
+                               context: context,
+                               userId: userId,
+                               userEmail: userEmail,
+                               bookId: widget.bookId,
+                               price: bookPrice,
+                               onSuccess: _handlePaymentSuccess,
+                           );
+                         },
                          style: ElevatedButton.styleFrom(
                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                            backgroundColor: Color(0xFF9B2226),

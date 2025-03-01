@@ -69,7 +69,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
             ),
             title: const Padding(
               padding: EdgeInsets.only(top: 8.0),
-              child: Text('Your Shelf',
+              child: Text('My Shelf',
                 style:TextStyle(
                     fontSize:25, color: Color(0xFFF8F0E3),
                     fontWeight: FontWeight.bold,

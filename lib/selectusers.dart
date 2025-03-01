@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -25,7 +26,8 @@ class _SelectUsersPageState extends State<SelectUsersPage> {
 
   Future<void> _fetchSuggestedUsers() async {
     try {
-      QuerySnapshot snapshot = await _firestore.collection('users').limit(5).get();
+      String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+      QuerySnapshot snapshot = await _firestore.collection('users').where(FieldPath.documentId, isNotEqualTo: currentUserId).limit(5).get();
       setState(() {
         _suggestedUsers = snapshot.docs.map((DocumentSnapshot doc) {
           var data = doc.data() as Map<String, dynamic>;
@@ -46,10 +48,12 @@ class _SelectUsersPageState extends State<SelectUsersPage> {
 
   Future<List<Map<String, dynamic>>> _searchUsers(String query) async {
     if (query.isEmpty) return [];
+    String currentUserId = FirebaseAuth.instance.currentUser!.uid;
     QuerySnapshot snapshot = await _firestore
         .collection('users')
         .where('username', isGreaterThanOrEqualTo: query)
         .where('username', isLessThanOrEqualTo: query + '\uf8ff')
+        .where(FieldPath.documentId, isNotEqualTo: currentUserId)
         .get();
 
     return snapshot.docs.map((doc) {
@@ -75,47 +79,104 @@ class _SelectUsersPageState extends State<SelectUsersPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Select Users"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.check),
-            onPressed: () {
-              Navigator.pop(context, _selectedUsers);
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              decoration: const InputDecoration(hintText: "Search Users"),
-              onChanged: (query) {
-                setState(() {
-                  _searchQuery = query;
-                });
-              },
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          iconTheme: const IconThemeData(
+            size: 30,
+            color: Color(0xFFECE2D0),
+            shadows: [
+              Shadow(
+                blurRadius: 2.0,
+                color: Colors.black45,
+                offset: Offset(1.0, 1.0),
+              ),
+            ],),
+          backgroundColor:  const Color(0xFFE07A5F),
+          title: const Text(
+              "Select Users",
+            style: TextStyle(
+                color: Color(0xFFF8F0E3),
+                shadows: [
+                  Shadow(
+                    blurRadius: 8.0,
+                    color: Colors.black45,
+                    offset: Offset(2.0, 2.0),
+                  ),]
             ),
           ),
-          if (_searchQuery.isEmpty && _suggestedUsers.isNotEmpty) // Show suggestions when no search is active
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.check),
+              onPressed: () {
+                Navigator.pop(context, _selectedUsers);
+              },
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Suggestions:",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _suggestedUsers.length,
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                decoration: const InputDecoration(hintText: "Search Users"),
+                onChanged: (query) {
+                  setState(() {
+                    _searchQuery = query;
+                  });
+                },
+              ),
+            ),
+            if (_searchQuery.isEmpty && _suggestedUsers.isNotEmpty) // Show suggestions when no search is active
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Suggestions:",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _suggestedUsers.length,
+                      itemBuilder: (context, index) {
+                        var user = _suggestedUsers[index];
+                        return ListTile(
+                          leading: CircleAvatar(
+                              backgroundImage: user['profile_image'] != null
+                                  ? NetworkImage(user['profile_image'])
+                                  : const AssetImage('assets/images/profile2.png') as ImageProvider,
+                              backgroundColor: Colors.white,
+                          ),
+                          title: Text(user['username']),
+                          subtitle: Text(user['fullname']),
+                          trailing: Checkbox(
+                            value: _selectedUsers.any((selectedUser) => selectedUser['id'] == user['id']),
+                            onChanged: (value) => _toggleUserSelection(user),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            Expanded(
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future: _searchUsers(_searchQuery),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return const Center(child: Text("An error occurred"));
+                  }
+                  List<Map<String, dynamic>> users = snapshot.data ?? [];
+                  return ListView.builder(
+                    itemCount: users.length,
                     itemBuilder: (context, index) {
-                      var user = _suggestedUsers[index];
+                      var user = users[index];
                       return ListTile(
                         leading: CircleAvatar(
                             backgroundImage: user['profile_image'] != null
@@ -131,45 +192,12 @@ class _SelectUsersPageState extends State<SelectUsersPage> {
                         ),
                       );
                     },
-                  ),
-                ],
+                  );
+                },
               ),
             ),
-          Expanded(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: _searchUsers(_searchQuery),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return const Center(child: Text("An error occurred"));
-                }
-                List<Map<String, dynamic>> users = snapshot.data ?? [];
-                return ListView.builder(
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    var user = users[index];
-                    return ListTile(
-                      leading: CircleAvatar(
-                          backgroundImage: user['profile_image'] != null
-                              ? NetworkImage(user['profile_image'])
-                              : const AssetImage('assets/images/profile2.png') as ImageProvider,
-                          backgroundColor: Colors.white,
-                      ),
-                      title: Text(user['username']),
-                      subtitle: Text(user['fullname']),
-                      trailing: Checkbox(
-                        value: _selectedUsers.any((selectedUser) => selectedUser['id'] == user['id']),
-                        onChanged: (value) => _toggleUserSelection(user),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

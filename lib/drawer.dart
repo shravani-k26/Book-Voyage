@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:book_voyage_demo/favorites.dart';
+import 'package:book_voyage_demo/purchased.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -177,6 +178,21 @@ class _SideNavigationState extends State<SideNavigation> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => FavoritesPage()),
+                );
+              },
+            ),
+          ),
+          Material(
+            color:Color(0xFFECE2D0),
+            elevation: 0.5,
+            shadowColor: Color(0xFFE07A5F),
+            child: ListTile(
+              leading: Image.asset('assets/images/shopping-cart.png', height: 28,),
+              title: const Text('Purchases'),
+              onTap: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PurchasedPage()),
                 );
               },
             ),

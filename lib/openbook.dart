@@ -209,7 +209,7 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
           .doc(uid)
           .collection('bookmarks')
           .doc(widget.bookId)
-          .set({'bookmarks': bookmarks, 'timestamp': FieldValue.serverTimestamp()});
+          .delete();
 
       setState(() {});
       Fluttertoast.showToast(msg: "Bookmark Removed!");

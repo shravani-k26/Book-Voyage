@@ -119,8 +119,31 @@ class _CreateBookClubPageState extends State<CreateBookClubPage> {
         child: Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
-            iconTheme: const IconThemeData(color: Color(0xFFECE2D0)),
-            title: const Text("Create Book Club", style: TextStyle(color: Color(0xFFF8F0E3))),
+            iconTheme: const IconThemeData(
+                size: 30,
+                color: Color(0xFFECE2D0),
+                shadows: [
+                  Shadow(
+                    blurRadius: 2.0,
+                    color: Colors.black45,
+                    offset: Offset(1.0, 1.0),
+                  ),
+                ]
+            ),
+            title: const Text(
+                "Create Book Club",
+                style: TextStyle(
+                    color: Color(0xFFF8F0E3),
+                    fontSize:25,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 8.0,
+                        color: Colors.black45,
+                        offset: Offset(2.0, 2.0),
+                      ),]
+                )
+            ),
             backgroundColor: Colors.transparent,
           ),
           body: SingleChildScrollView(
