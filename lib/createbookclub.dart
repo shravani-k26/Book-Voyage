@@ -24,6 +24,7 @@ class _CreateBookClubPageState extends State<CreateBookClubPage> {
   List<Map<String, dynamic>> _selectedUsers = [];
   File? _selectedImage;
   String? _imageUrl;
+  bool _isLoading = false;
 
   Future<void> createBookClub() async {
     String clubName = _clubNameController.text.trim();
@@ -36,6 +37,10 @@ class _CreateBookClubPageState extends State<CreateBookClubPage> {
       );
       return;
     }
+
+    setState(() {
+      _isLoading = true; // Show loading indicator
+    });
 
     try {
       // Upload image if selected
@@ -58,6 +63,7 @@ class _CreateBookClubPageState extends State<CreateBookClubPage> {
         'description': clubDescription,
         'creatorId': widget.userId,
         'members': memberIds,
+        'membersCount': memberIds.length,
         'clubImageUrl': _imageUrl ?? "",
         'createdAt': FieldValue.serverTimestamp(),
       });
@@ -82,6 +88,11 @@ class _CreateBookClubPageState extends State<CreateBookClubPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error creating book club: $e")),
       );
+    }
+    finally{
+      setState(() {
+        _isLoading = false; // Hide loading indicator
+      });
     }
   }
 
@@ -196,7 +207,9 @@ class _CreateBookClubPageState extends State<CreateBookClubPage> {
                   ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
+                  child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton(
                     onPressed: _navigateToSelectUsersPage,
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),

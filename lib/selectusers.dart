@@ -153,6 +153,7 @@ class _SelectUsersPageState extends State<SelectUsersPage> {
                           title: Text(user['username']),
                           subtitle: Text(user['fullname']),
                           trailing: Checkbox(
+                            activeColor: const Color(0xFF9B2226),
                             value: _selectedUsers.any((selectedUser) => selectedUser['id'] == user['id']),
                             onChanged: (value) => _toggleUserSelection(user),
                           ),

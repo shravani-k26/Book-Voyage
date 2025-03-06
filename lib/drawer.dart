@@ -173,7 +173,7 @@ class _SideNavigationState extends State<SideNavigation> {
             shadowColor: Color(0xFFE07A5F),
             child: ListTile(
               leading: Image.asset('assets/images/shelf.png', height: 28,),
-              title: const Text('Your Shelf'),
+              title: const Text('My Shelf'),
               onTap: (){
                 Navigator.push(
                     context,
@@ -188,7 +188,7 @@ class _SideNavigationState extends State<SideNavigation> {
             shadowColor: Color(0xFFE07A5F),
             child: ListTile(
               leading: Image.asset('assets/images/shopping-cart.png', height: 28,),
-              title: const Text('Purchases'),
+              title: const Text('My Purchases'),
               onTap: (){
                 Navigator.push(
                   context,
@@ -197,15 +197,16 @@ class _SideNavigationState extends State<SideNavigation> {
               },
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                  onPressed: ()=>_logout(context),
-                  icon: Icon(Icons.logout)
-              ),
-              const Text('Logout')
-            ],
+          SizedBox(height: 24,),
+          GestureDetector(
+            onTap: ()=>_logout(context),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.logout),
+                Text('Logout')
+              ],
+            ),
           ),
         ],
       ),

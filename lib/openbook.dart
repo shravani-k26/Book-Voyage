@@ -55,7 +55,6 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
         bookmarks.add(currentPageIndex);
         Fluttertoast.showToast(msg: "Bookmark Added!");
       }
-
       if (bookmarks.isEmpty) {
         await FirebaseFirestore.instance
             .collection('users')

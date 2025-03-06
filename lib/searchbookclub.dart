@@ -33,7 +33,7 @@ class _SearchBookClubPageState extends State<SearchBookClubPage> {
       QuerySnapshot snapshot = await _firestore
           .collection('bookClubs')
           .orderBy('membersCount', descending: true) // Most popular clubs
-          .limit(3)
+          .limit(5)
           .get();
 
       setState(() {
@@ -128,6 +128,7 @@ class _SearchBookClubPageState extends State<SearchBookClubPage> {
               "Search Book Clubs",
               style: TextStyle(
                 fontSize: 24,
+                fontWeight: FontWeight.bold,
                 color: Color(0xFFF8F0E3),
                 shadows: [
                   Shadow(

@@ -285,10 +285,17 @@ class _BookClubDetailsPageState extends State<BookClubDetailsPage> {
                           },
                         ),
                       ),
-                    child: const Text("Add Member"),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add, color: Colors.white,),
+                        Text("Add Member", style: TextStyle(color: Colors.white),),
+                      ],
+                    ),
                   )
                 ],
               ),
+            const SizedBox(height: 24,),
             const Text(
               "Members",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
