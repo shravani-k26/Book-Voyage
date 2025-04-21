@@ -125,6 +125,38 @@ class _EditProfilePageState extends State<EditProfilePage> {
       initialDate: initialDate,
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFFE07A5F),
+              onPrimary: Colors.white,
+            ),
+            textSelectionTheme: const TextSelectionThemeData(
+              cursorColor: Color(0xFF9B2226),
+              selectionColor: Color(0xFFCF6F72),
+              selectionHandleColor: Color(0xFF9B2226),
+            ),
+            dialogBackgroundColor: const Color(0xFFFEF7DC),
+            inputDecorationTheme: InputDecorationTheme(
+              focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFE07A5F),
+                    width: 2,
+                  )
+              ),
+              filled: true,
+              fillColor: const Color(0xFFECE2D0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (pickedDate != null && pickedDate != initialDate) {
       setState(() {

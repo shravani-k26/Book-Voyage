@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:book_voyage_demo/home.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class InterestsPage extends StatefulWidget{
   final String uid;
@@ -14,6 +15,53 @@ class _InterestsPageState extends State<InterestsPage> {
   final List<String>allInterests=['Mystery','Romance','Sci-Fi','Self Help','Adventure','Suspense','Psychological Thriller','Educational','Information Technology'];
   final Set<String> selectedInterests = {};
   bool isLoading = false;
+  Future<void> fetchInterests() async {
+    setState(() {
+      isLoading = true; // Start loading
+    });
+    try {
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(widget.uid).get();
+      if (userDoc.exists) {
+        // Get the interests from Firestore and update the selectedInterests set
+        List<dynamic> interestsFromFirestore = userDoc['interests'] ?? [];
+        setState(() {
+          selectedInterests.addAll(interestsFromFirestore.map((e) => e.toString()));
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching interests: $e')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false; // Stop loading
+      });
+    }
+  }
+  Icon _getInterestIcon(String interest) {
+    switch (interest) {
+      case 'Mystery':
+        return Icon(Icons.search); // Magnifying glass for Mystery
+      case 'Romance':
+        return Icon(Icons.favorite); // Heart for Romance
+      case 'Sci-Fi':
+        return Icon(Icons.rocket_launch); // Rocket for Sci-Fi
+      case 'Self Help':
+        return Icon(Icons.lightbulb); // Lightbulb for Self Help
+      case 'Adventure':
+        return Icon(Icons.terrain); // Mountain for Adventure
+      case 'Suspense':
+        return Icon(Icons.movie); // Film reel for Suspense
+      case 'Psychological Thriller':
+        return Icon(Icons.psychology); // Brain for Psychological Thriller
+      case 'Educational':
+        return Icon(Icons.school); // School for Educational
+      case 'Information Technology':
+        return Icon(Icons.laptop_mac); // Laptop for IT
+      default:
+        return Icon(Icons.help_outline); // Default icon if unknown interest
+    }
+  }
   Future<void>saveInterests() async {
     setState(() {
       isLoading = true; // Start loading
@@ -22,6 +70,14 @@ class _InterestsPageState extends State<InterestsPage> {
       await _firestore.collection('users').doc(widget.uid).update({
         'interests': selectedInterests.toList(),
       });
+      Fluttertoast.showToast(
+        msg: "Interests saved successfully",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor:Color(0xFFECE2D0).withOpacity(0.9),
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomePage(uid: widget.uid)),
@@ -37,6 +93,11 @@ class _InterestsPageState extends State<InterestsPage> {
         isLoading = false; // Stop loading
       });
     }
+  }
+  @override
+  void initState() {
+    super.initState();
+    fetchInterests(); // Fetch interests when the page is initialized
   }
   @override
   Widget build(BuildContext context) {
@@ -92,7 +153,15 @@ class _InterestsPageState extends State<InterestsPage> {
                                             color: Colors.transparent,
                                             child: ListTile(
                                               splashColor: Color(0xFFEDA38F),
-                                              title: Text(interest, style: TextStyle(fontSize: 18, ),
+                                              title: Row(
+                                                children: [
+                                                  _getInterestIcon(interest),
+                                                  Padding(
+                                                    padding: const EdgeInsets.all(8.0),
+                                                    child: Text(interest, style: TextStyle(fontSize: 16, ),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                               leading: Checkbox(
                                                 activeColor: const Color(0xFF9B2226),

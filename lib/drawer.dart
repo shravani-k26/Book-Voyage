@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:book_voyage_demo/editProfile.dart';
 import 'package:book_voyage_demo/favorites.dart';
+import 'package:book_voyage_demo/interests_page.dart';
 import 'package:book_voyage_demo/purchased.dart';
+import 'package:book_voyage_demo/settingsPage.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -209,6 +211,45 @@ class _SideNavigationState extends State<SideNavigation> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => EditProfilePage()),
+                );
+              },
+            ),
+          ),
+          Material(
+            color:Color(0xFFECE2D0),
+            elevation: 0.5,
+            shadowColor: Color(0xFFE07A5F),
+            child: ListTile(
+              leading: Icon(Icons.interests, size: 28,),
+              title: const Text('Edit Your Interest'),
+              onTap: (){
+                User? user = FirebaseAuth.instance.currentUser;
+                if (user != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => InterestsPage(uid: user.uid),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('User not logged in')),
+                  );
+                }
+              },
+            ),
+          ),
+          Material(
+            color:Color(0xFFECE2D0),
+            elevation: 0.5,
+            shadowColor: Color(0xFFE07A5F),
+            child: ListTile(
+              leading: Icon(Icons.settings, size: 28,),
+              title: const Text('Settings'),
+              onTap: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsPage()),
                 );
               },
             ),

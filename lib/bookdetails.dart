@@ -111,6 +111,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
         toastLength: Toast.LENGTH_SHORT,
         backgroundColor: Colors.grey,
         textColor: Colors.white,
+        fontSize: 16.0,
       );
     }
   }
@@ -330,6 +331,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
                                              toastLength: Toast.LENGTH_SHORT,
                                              backgroundColor: Color(0xFFECE2D0).withOpacity(0.9),
                                              textColor:Colors.black,
+                                             fontSize: 16.0,
                                            );
                                           }
                                           else{
@@ -338,7 +340,8 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
                                               msg: "Added to Shelf",
                                               toastLength: Toast.LENGTH_SHORT,
                                               backgroundColor: Color(0xFFECE2D0).withOpacity(0.9),
-                                              textColor:Colors.black ,
+                                              textColor:Colors.black,
+                                              fontSize: 16.0,
                                             );
                                           }
                                         },
