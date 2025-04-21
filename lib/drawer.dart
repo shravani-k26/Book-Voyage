@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:book_voyage_demo/editProfile.dart';
 import 'package:book_voyage_demo/favorites.dart';
 import 'package:book_voyage_demo/purchased.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -193,6 +194,21 @@ class _SideNavigationState extends State<SideNavigation> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => PurchasedPage()),
+                );
+              },
+            ),
+          ),
+          Material(
+            color:Color(0xFFECE2D0),
+            elevation: 0.5,
+            shadowColor: Color(0xFFE07A5F),
+            child: ListTile(
+              leading: Icon(Icons.edit, size: 28,),
+              title: const Text('Edit Profile'),
+              onTap: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => EditProfilePage()),
                 );
               },
             ),

@@ -142,7 +142,7 @@ class _SearchBookClubPageState extends State<SearchBookClubPage> {
           ),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
+            child: ListView(
               children: [
                 TextField(
                   controller: _searchController,
@@ -162,23 +162,35 @@ class _SearchBookClubPageState extends State<SearchBookClubPage> {
                         "Recommended Clubs",
                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
-                      SizedBox(
-                        height: 150,
-                        child: ListView.builder(
-                          itemCount: _recommendedClubs.length,
-                          itemBuilder: (context, index) {
-                            var club = _recommendedClubs[index];
-                            String imageUrl = club['clubImageUrl'] ?? '';
-                            return buildClubCard(club, imageUrl);
-                          },
-                        ),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: _recommendedClubs.length,
+                        itemBuilder: (context, index) {
+                          var club = _recommendedClubs[index];
+                          String imageUrl = club['clubImageUrl'] ?? '';
+                          return buildClubCard(club, imageUrl);
+                        },
                       ),
                     ],
                   ),
 
                 // Display Search Results
-                Expanded(
-                  child: ListView.builder(
+                // Display Search Results or No Results Found
+                if (_isSearching)
+                  _searchResults.isEmpty
+                      ? const Padding(
+                    padding: EdgeInsets.only(top: 20),
+                    child: Center(
+                      child: Text(
+                        "No book clubs found",
+                        style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  )
+                      : ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
                     itemCount: _searchResults.length,
                     itemBuilder: (context, index) {
                       var club = _searchResults[index];
@@ -186,11 +198,10 @@ class _SearchBookClubPageState extends State<SearchBookClubPage> {
                       return buildClubCard(club, imageUrl);
                     },
                   ),
-                ),
               ],
+              ),
             ),
           ),
-        ),
       ),
     );
   }

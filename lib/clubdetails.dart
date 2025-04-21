@@ -24,6 +24,7 @@ class _BookClubDetailsPageState extends State<BookClubDetailsPage> {
   Map<String, dynamic>? clubData;
   String? userId;
   bool isLoading = true;
+
   List<Map<String, dynamic>> _selectedUsers = [];
   @override
   void initState() {
@@ -137,7 +138,18 @@ class _BookClubDetailsPageState extends State<BookClubDetailsPage> {
         'createdClubs': FieldValue.arrayRemove([widget.clubId]),
       });
 
+      final messagesRef = _firestore
+          .collection('bookClubs')
+          .doc(widget.clubId)
+          .collection('messages');
+
+      final messagesSnapshot = await messagesRef.get();
+      for (var doc in messagesSnapshot.docs) {
+        await doc.reference.delete();
+      }
+
       await _firestore.collection('bookClubs').doc(widget.clubId).delete();
+
       Fluttertoast.showToast(msg: "Book club deleted.");
       Navigator.pop(context);
     } catch (e) {
@@ -145,6 +157,7 @@ class _BookClubDetailsPageState extends State<BookClubDetailsPage> {
       Fluttertoast.showToast(msg: "Failed to delete club.");
     }
   }
+
   Future<void> _removeMember(String memberId) async {
     if (clubData == null) return;
     if (clubData!['creatorId'] != userId) return;
@@ -152,7 +165,7 @@ class _BookClubDetailsPageState extends State<BookClubDetailsPage> {
     try {
       await _firestore.collection('bookClubs').doc(widget.clubId).update({
         'members': FieldValue.arrayRemove([memberId]),
-        'memberCount': FieldValue.increment(-1), // Decrease member count
+        'membersCount': FieldValue.increment(-1), // Decrease member count
       });
 
       await _firestore.collection('users').doc(memberId).update({
@@ -160,7 +173,7 @@ class _BookClubDetailsPageState extends State<BookClubDetailsPage> {
       });
 
       Fluttertoast.showToast(msg: "Member removed.");
-      _fetchBookClubDetails(); // Refresh UI
+      _fetchBookClubDetails();
     } catch (e) {
       print("Error removing member: $e");
       Fluttertoast.showToast(msg: "Failed to remove member.");
@@ -186,6 +199,119 @@ class _BookClubDetailsPageState extends State<BookClubDetailsPage> {
       }
     }
   }
+  void _showEditClubDialog() {
+    final TextEditingController nameController = TextEditingController(text: clubData?['name'] ?? '');
+    final TextEditingController descController = TextEditingController(text: clubData?['description'] ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Edit Club Details'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'Club Name',
+                  labelStyle: TextStyle(
+                    color: Color(0xFFE07A5F), // Set your desired label color here
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: descController,
+                decoration: InputDecoration(labelText: 'Description',
+                  labelStyle: TextStyle(
+                      color: Color(0xFFE07A5F),// Set your desired label color here
+                  ),
+                ),
+                maxLines: 3,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel',style: TextStyle(color: Color(0xFFE07A5F),),),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newName = nameController.text.trim();
+              final newDesc = descController.text.trim();
+
+              if (newName.isNotEmpty && newDesc.isNotEmpty) {
+                await _updateClubDetails(newName, newDesc);
+                Navigator.pop(context);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF9B2226),
+            ).copyWith(
+              overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                    (Set<WidgetState> states) {
+                  if (states.contains(WidgetState.pressed)) {
+                    return Color(0xFFE07A5F).withOpacity(0.2); // Splash effect color
+                  }
+                  return null; // Default splash color
+                },
+              ),
+            ),
+            child: Text('Save', style: TextStyle(color: Colors.white),),
+          ),
+        ],
+      ),
+    );
+  }
+  Future<void> _updateClubDetails(String newName, String newDesc) async {
+    final clubDoc = FirebaseFirestore.instance.collection('bookClubs').doc(widget.clubId);
+
+    Map<String, dynamic> updatedFields = {};
+
+    if (newName.isNotEmpty && newName != clubData?['clubName']) {
+      updatedFields['name'] = newName;
+    }
+
+    if (newDesc.isNotEmpty && newDesc != clubData?['clubDescription']) {
+      updatedFields['description'] = newDesc;
+    }
+
+    if (updatedFields.isEmpty) {
+      Fluttertoast.showToast(
+          msg: "No changes to update.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+      );
+      return;
+    }
+    try {
+      await clubDoc.update(updatedFields);
+      Fluttertoast.showToast(
+        msg: "Club details updated successfully",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
+      _fetchBookClubDetails(); // Refresh the data
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Failed to update club details: $e",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
+  }
+
   void showImageDialog(String clubId, String imageUrl) {
     showDialog(
       context: context,
@@ -236,6 +362,24 @@ class _BookClubDetailsPageState extends State<BookClubDetailsPage> {
         appBar: AppBar(
           backgroundColor: const Color(0xFFECE2D0),
           title: const Text("Book Club Details"),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    _showEditClubDialog();
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Text('Edit Club Details'),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         body: isLoading
             ? Center(child: CircularProgressIndicator())
@@ -256,12 +400,20 @@ class _BookClubDetailsPageState extends State<BookClubDetailsPage> {
                 ),
               ),
             ),
-            SizedBox(height: 16),
-            // Book Club Name
+            SizedBox(height: 16), // Book Club Name
             Center(
               child: Text(
                 clubData!['name'] ?? 'N/A',
                 style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  'Total Members: ${(clubData!['members'] as List<dynamic>?)?.length ?? 0}',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -334,7 +486,30 @@ class _BookClubDetailsPageState extends State<BookClubDetailsPage> {
                             ? NetworkImage(memberImage)
                             : AssetImage('assets/images/group.jpg') as ImageProvider,
                       ),
-                      title: Text(memberName),
+                      title: Row(
+                        children: [
+                          Text(memberName,style: TextStyle(fontWeight: FontWeight.bold), ),
+                          if (userId == clubData!['creatorId'] && memberID == clubData!['creatorId'])
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFE07A5F),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  'Creator',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                       trailing: userId==clubData!['creatorId'] && memberID != clubData!['creatorId']
                                 ? IconButton(
                                     icon: Icon(Icons.remove_circle, color: const Color(0xFF9B2226),),

@@ -191,7 +191,7 @@ class _CreateAccountState extends State<CreateAccountPage>{
                       ),
                     ),
                     const SizedBox(height: 10,),
-                    Container(height: 150,
+                    Container(height: 120,
                         width: 300,
                         child: Image.asset("assets/images/acc_logo.png")
                     ),
@@ -291,7 +291,7 @@ class _CreateAccountState extends State<CreateAccountPage>{
                         prefixIcon: Icon(Icons.lock),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 20,),
                     isLoading
                     ?Center(child: CircularProgressIndicator())
                     :ElevatedButton(
@@ -312,7 +312,7 @@ class _CreateAccountState extends State<CreateAccountPage>{
                       },
                       child: const Text("Create Account", style: TextStyle(fontSize: 18, color: Colors.white),),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -334,6 +334,7 @@ class _CreateAccountState extends State<CreateAccountPage>{
                         ),
                       ],
                     ),
+                    const SizedBox(height: 20,)
                   ],
                 ),
               ),

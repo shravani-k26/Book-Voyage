@@ -28,6 +28,44 @@ class _BookClubListPageState extends State<BookClubListPage> {
     _fetchUserClubs();
   }
 
+  Future<int> getUnreadCount(String clubId) async {
+    final snapshot = await _firestore
+        .collection('bookClubs')
+        .doc(clubId)
+        .collection('messages')
+        .get();
+
+    int unreadCount = 0;
+    for (var doc in snapshot.docs) {
+      List<dynamic>? readBy = doc.data()['readBy'];
+      if (readBy == null || (!readBy.contains(widget.userId) && doc.data()['senderId'] != widget.userId)) {
+        unreadCount++;
+      }
+    }
+    return unreadCount;
+  }
+
+
+  Future<void> markMessagesAsRead(String clubId) async {
+    final snapshot = await _firestore
+        .collection('bookClubs')
+        .doc(clubId)
+        .collection('messages')
+        .get();
+
+    for (var doc in snapshot.docs) {
+      if (doc.data()['senderId'] != widget.userId) {
+        List<dynamic>? readBy = doc.data()['readBy'];
+        if (readBy == null || !readBy.contains(widget.userId)) {
+          await doc.reference.update({
+            'readBy': FieldValue.arrayUnion([widget.userId]),
+          });
+        }
+      }
+    }
+  }
+
+
   void _fetchUserClubs() async {
     DocumentSnapshot userSnapshot = await _firestore.collection('users').doc(widget.userId).get();
     if (userSnapshot.exists) {
@@ -65,6 +103,15 @@ class _BookClubListPageState extends State<BookClubListPage> {
   }
   Future<void> deleteBookClub(String clubId) async {
     try {
+      final messagesRef = _firestore
+          .collection('bookClubs')
+          .doc(clubId)
+          .collection('messages');
+
+      final messagesSnapshot = await messagesRef.get();
+      for (var doc in messagesSnapshot.docs) {
+        await doc.reference.delete();
+      }
       await _firestore.collection('bookClubs').doc(clubId).delete();
       QuerySnapshot userSnapshots = await _firestore.collection('users').get();
       for (var user in userSnapshots.docs) {
@@ -73,7 +120,10 @@ class _BookClubListPageState extends State<BookClubListPage> {
           'createdClubs': FieldValue.arrayRemove([clubId]),
         });
       }
+
       await _storage.ref('clubImages/club_$clubId.jpg').delete();
+
+      // 5. Refresh UI
       _fetchUserClubs();
       Fluttertoast.showToast(msg: "Book club deleted successfully.");
     } catch (e) {
@@ -91,7 +141,7 @@ class _BookClubListPageState extends State<BookClubListPage> {
       } else {
         await _firestore.collection('bookClubs').doc(clubId).update({
           'members': FieldValue.arrayRemove([widget.userId]),
-          'memberCount': FieldValue.increment(-1),
+          'membersCount': FieldValue.increment(-1),
         });
         await _firestore.collection('users').doc(widget.userId).update({
           'joinedClubs': FieldValue.arrayRemove([clubId]),
@@ -178,71 +228,114 @@ class _BookClubListPageState extends State<BookClubListPage> {
               : _allClubIds.isEmpty
               ? const Center(child: Text("You haven't joined or created any book clubs yet."))
               : StreamBuilder(
-            stream: fetchUserClubs(),
-            builder: (context, clubSnapshot) {
-              if (clubSnapshot.connectionState == ConnectionState.waiting) {
+                stream: fetchUserClubs(),
+                builder: (context, clubSnapshot) {
+                if (clubSnapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
-              }
-              if (clubSnapshot.hasError) {
+                }
+                if (clubSnapshot.hasError) {
                 return const Center(child: Text("An error occurred. Please try again later."));
-              }
-              if (!clubSnapshot.hasData || clubSnapshot.data!.isEmpty) {
+                }
+                if (!clubSnapshot.hasData || clubSnapshot.data!.isEmpty) {
                 return const Center(child: Text("No book clubs found."));
-              }
-              List<Map<String, dynamic>> clubs = clubSnapshot.data!;
-              return ListView.builder(
-                itemCount: clubs.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Card(
-                      color: const Color(0xFFECE2D0),
-                      child: ListTile(
-                        onTap: (){
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context)=>BookClubChatPage(clubId: clubs[index]['id'], clubName: clubs[index]['name'], clubImageUrl: clubs[index]['clubImageUrl'],))
-                          );
-                        },
-                        leading: GestureDetector(
-                          onTap: () => showImageDialog(clubs[index]['id'], clubs[index]['clubImageUrl']),
-                          child: CircleAvatar(
-                            radius: 25,
-                            backgroundImage: clubs[index]['clubImageUrl'] != ""
-                                ? NetworkImage(clubs[index]['clubImageUrl'])
-                                : null,
-                            backgroundColor: const Color(0xFFECE2D0),
-                            child: clubs[index]['clubImageUrl'] == ""
-                                ? const Icon(Icons.group, color: Colors.white)
-                                : null,
-                          ),
-                        ),
-                        title: Text(clubs[index]['name']),
-                        subtitle: Text(clubs[index]['description']),
-                        trailing: PopupMenuButton(
-                            onSelected: (value){
-                              if(value=='delete'){
-                                deleteBookClub(clubs[index]['id']);
-                              }else if(value=='leave'){
-                                leaveBookClub(clubs[index]['id']);
-                              }
-                            },
-                            itemBuilder: (context) =>[
-                              if (clubs[index]['creatorId'] == widget.userId)
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Text("Delete Club"),
-                                )
-                              else
-                                const PopupMenuItem(
-                                  value: 'leave',
-                                  child: Text("Leave Club"),
+                }
+                List<Map<String, dynamic>> clubs = clubSnapshot.data!;
+                return ListView.builder(
+                  itemCount: clubs.length,
+                  itemBuilder: (context, index) {
+                    return FutureBuilder(
+                      future:  getUnreadCount(clubs[index]['id']),
+                      builder: (context, snapshot) {
+                        int unreadCount = snapshot.data ?? 0;
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Card(
+                            color: const Color(0xFFECE2D0),
+                            child: ListTile(
+                              onTap: () async {
+                                await markMessagesAsRead(clubs[index]['id']);
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) =>
+                                        BookClubChatPage(
+                                          clubId: clubs[index]['id'],
+                                          clubName: clubs[index]['name'],
+                                          clubImageUrl: clubs[index]['clubImageUrl'],
+                                          userId: widget.userId,))
+                                ).then((_) {
+                                  // After coming back to the Book Club List, refresh unread counts
+                                  setState(() {
+                                    // Re-fetch the unread message counts to update the UI
+                                  });
+                                });
+                              },
+                              leading: GestureDetector(
+                                onTap: () =>
+                                    showImageDialog(clubs[index]['id'],
+                                        clubs[index]['clubImageUrl']),
+                                child: CircleAvatar(
+                                  radius: 25,
+                                  backgroundImage: clubs[index]['clubImageUrl'] !=
+                                      ""
+                                      ? NetworkImage(
+                                      clubs[index]['clubImageUrl'])
+                                      : null,
+                                  backgroundColor: const Color(0xFFECE2D0),
+                                  child: clubs[index]['clubImageUrl'] == ""
+                                      ? const Icon(
+                                      Icons.group, color: Colors.white)
+                                      : null,
                                 ),
-                            ]
-                        ),
-                      ),
-                    ),
-                  );
+                              ),
+                              title: Row(
+                                children: [
+                                  Expanded(child: Text(clubs[index]['name'])),
+                                  if (unreadCount > 0)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.redAccent,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        '$unreadCount',
+                                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              subtitle: Text(clubs[index]['description'],
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              trailing: PopupMenuButton(
+                                  onSelected: (value) {
+                                    if (value == 'delete') {
+                                      deleteBookClub(clubs[index]['id']);
+                                    } else if (value == 'leave') {
+                                      leaveBookClub(clubs[index]['id']);
+                                    }
+                                  },
+                                  itemBuilder: (context) =>
+                                  [
+                                    if (clubs[index]['creatorId'] ==
+                                        widget.userId)
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text("Delete Club"),
+                                      )
+                                    else
+                                      const PopupMenuItem(
+                                        value: 'leave',
+                                        child: Text("Leave Club"),
+                                      ),
+                                  ]
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    );
                 },
               );
             },

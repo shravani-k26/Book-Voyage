@@ -39,11 +39,10 @@ class _CreateBookClubPageState extends State<CreateBookClubPage> {
     }
 
     setState(() {
-      _isLoading = true; // Show loading indicator
+      _isLoading = true;
     });
 
     try {
-      // Upload image if selected
       if (_selectedImage != null) {
         String fileName = 'book_club_images/${DateTime.now().millisecondsSinceEpoch}.jpg';
         UploadTask uploadTask = _storage.ref(fileName).putFile(_selectedImage!);
@@ -54,10 +53,8 @@ class _CreateBookClubPageState extends State<CreateBookClubPage> {
         _imageUrl = defaultImageUrl;
       }
 
-      // Include creator in the members list
       List<String> memberIds = [widget.userId, ..._selectedUsers.map((user) => user['id']).toList()];
 
-      // Create a new book club document
       DocumentReference clubRef = await _firestore.collection('bookClubs').add({
         'name': clubName,
         'description': clubDescription,
@@ -68,18 +65,15 @@ class _CreateBookClubPageState extends State<CreateBookClubPage> {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // Add the club ID to the creator's "createdClubs" field
       await _firestore.collection('users').doc(widget.userId).update({
         'createdClubs': FieldValue.arrayUnion([clubRef.id]),
       });
 
-      // Add the club ID to all selected users' "joinedClubs" field
       for (var user in _selectedUsers) {
         await _firestore.collection('users').doc(user['id']).update({
           'joinedClubs': FieldValue.arrayUnion([clubRef.id]),
         });
       }
-
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Book club created successfully!")),
@@ -91,11 +85,10 @@ class _CreateBookClubPageState extends State<CreateBookClubPage> {
     }
     finally{
       setState(() {
-        _isLoading = false; // Hide loading indicator
+        _isLoading = false;
       });
     }
   }
-
   Future<void> _pickImage() async {
     final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedImage != null) {

@@ -1,4 +1,5 @@
 import 'package:book_voyage_demo/home.dart';
+import 'package:book_voyage_demo/password_reset.dart';
 import 'package:flutter/material.dart';
 import 'package:book_voyage_demo/create_account.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -162,7 +163,18 @@ class _LoginPageState extends State<LoginPage> {
                         ),),
                     ),
                     const SizedBox(height: 10),
-                    const Center(child: Text("Forgot Password?",style: TextStyle(fontWeight: FontWeight.w500),)),
+                    GestureDetector(
+                      onTap: (){
+                        Navigator.push(
+                            context, 
+                            MaterialPageRoute(builder: (context)=>PasswordResetPage())
+                        );
+                      },
+                      child: const Center(
+                          child: Text("Forgot Password?",
+                            style: TextStyle(fontWeight: FontWeight.w500),)
+                        ),
+                    ),
                     const SizedBox(height:20),
                     Column(
                       children: [
