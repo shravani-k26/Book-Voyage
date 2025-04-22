@@ -20,6 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   bool isLoading = false;
+  bool _obscurePassword = true;
 
   Future<void>login() async{
     setState(() {
@@ -72,10 +73,12 @@ class _LoginPageState extends State<LoginPage> {
       );
     }catch(e)
     {
+      String errorMessage = "Invalid Credentials";
+      if (e is FirebaseAuthException) {
+        errorMessage = e.message ?? errorMessage;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("Invalid Credentials")
-        ),
+        SnackBar(content: Text(errorMessage)),
       );
     }finally {
       setState(() {
@@ -99,130 +102,124 @@ class _LoginPageState extends State<LoginPage> {
         ),
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          body: SingleChildScrollView(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                        height: 300,
-                        width: 600,
-                        child: Image.asset("assets/images/logo.png",)),
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 15),
-                      child: Center(child: Text("Welcome Back!", style: TextStyle(
-                        fontSize: 23,
-                        color:Color(0xFFB64242),
-                        fontWeight: FontWeight.w500,
-                      ),
-                      ),
-                      ),
-                    ),
-                    TextField(
-                      controller: _usernameController,
-                      decoration: const InputDecoration(
-                          prefixIcon: Icon(Icons.person),
-                          hintText: 'Username'
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration:const InputDecoration(
-                        prefixIcon: Icon(Icons.lock),
-                        hintText: 'Password',
-                      ) ,
-                    ),
-                    const SizedBox(height: 30),
-                    isLoading
-                    ?Center(child: CircularProgressIndicator())
-                    : ElevatedButton(
-                      onPressed: (){
-                        login();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF9B2226),
-                      ).copyWith(
-                        overlayColor: WidgetStateProperty.resolveWith<Color?>(
-                              (Set<WidgetState> states) {
-                            if (states.contains(WidgetState.pressed)) {
-                              return Color(0xFFE07A5F).withOpacity(0.2); // Splash effect color
-                            }
-                            return null; // Default splash color
-                          },
+          body: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: SingleChildScrollView(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(height: 30,),
+                      Container(
+                          height: 300,
+                          width: 600,
+                          child: Image.asset("assets/images/logo.png",)),
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 20),
+                        child: Center(child: Text("Welcome Back!", style: TextStyle(
+                          fontSize: 23,
+                          color:Color(0xFFB64242),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        ),
                         ),
                       ),
-                      child: const Text("Login",
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
-                        ),),
-                    ),
-                    const SizedBox(height: 10),
-                    GestureDetector(
-                      onTap: (){
-                        Navigator.push(
-                            context, 
-                            MaterialPageRoute(builder: (context)=>PasswordResetPage())
-                        );
-                      },
-                      child: const Center(
-                          child: Text("Forgot Password?",
-                            style: TextStyle(fontWeight: FontWeight.w500),)
+                      TextField(
+                        controller: _usernameController,
+                        decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.person),
+                            hintText: 'Username'
                         ),
-                    ),
-                    const SizedBox(height:20),
-                    Column(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 20),
-                          child: Text("Or Connect with Google",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 18,
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(Icons.lock),
+                          hintText: 'Password',
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
                             ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                        ) ,
+                      ),
+                      const SizedBox(height: 30),
+                      isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : ElevatedButton(
+                        onPressed: (){
+                          login();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF9B2226),
+                        ).copyWith(
+                          overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                                (Set<WidgetState> states) {
+                              if (states.contains(WidgetState.pressed)) {
+                                return Color(0xFFE07A5F).withOpacity(0.2); // Splash effect color
+                              }
+                              return null; // Default splash color
+                            },
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: CircleAvatar(
-                            backgroundColor: Colors.white,
-                            child: IconButton(
-                              onPressed: (){},
-                              icon: Image.asset("assets/images/google.png", height:30,width: 30,),
-                            ),
+                        child: const Text("Login",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),),
+                      ),
+                      const SizedBox(height: 20),
+                      GestureDetector(
+                        onTap: (){
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context)=>PasswordResetPage())
+                          );
+                        },
+                        child: const Center(
+                            child: Text("Forgot Password?",
+                              style: TextStyle(fontWeight: FontWeight.w500),)
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: Text("New to Book Voyage?", style: theme.textTheme.bodyLarge,),
-                            ),
-                            InkWell(
-                                splashColor: theme.primaryColor.withOpacity(0.8),
-                                onTap: (){
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => CreateAccountPage()
-                                      )
-                                  );
-                                },
-                                child: Text("Create an account!",
-                                  style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold),
-                                )
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(height:80),
+                      Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: Text("New to Book Voyage?", style: theme.textTheme.bodyLarge,),
+                              ),
+                              InkWell(
+                                  splashColor: theme.primaryColor.withOpacity(0.8),
+                                  onTap: (){
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => CreateAccountPage()
+                                        )
+                                    );
+                                  },
+                                  child: Text("Create an account!",
+                                    style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold),
+                                  )
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

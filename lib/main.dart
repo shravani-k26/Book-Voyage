@@ -39,6 +39,7 @@ class MyApp extends StatelessWidget {
             borderSide: BorderSide.none,
           ),
           prefixIconColor: const Color(0xFFE07A5F),
+          suffixIconColor: const Color(0xFFE07A5F),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
