@@ -37,7 +37,6 @@ class _BookClubChatPageState extends State<BookClubChatPage> {
         .where('readBy', whereNotIn: [userId])
         .get();
     for (var doc in messages.docs) {
-      // Exclude the current user's own messages
       if (doc['senderId'] != userId) {
         await doc.reference.update({
           'readBy': FieldValue.arrayUnion([userId]),

@@ -489,7 +489,7 @@ class _BookClubDetailsPageState extends State<BookClubDetailsPage> {
                       title: Row(
                         children: [
                           Text(memberName,style: TextStyle(fontWeight: FontWeight.bold), ),
-                          if (userId == clubData!['creatorId'] && memberID == clubData!['creatorId'])
+                          if (memberID == clubData!['creatorId'])
                             Padding(
                               padding: const EdgeInsets.only(left: 8.0),
                               child: Container(

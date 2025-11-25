@@ -117,7 +117,7 @@ class _AudiobookTTSPageState extends State<AudiobookTTSPage> {
   Future<void> playTTS() async {
     if (localPdfPath.isNotEmpty) {
       setState(() {
-        isPlaying = true;// Start TTS from the startPage
+        isPlaying = true;
       });
 
       if (pdfController != null) {
@@ -147,12 +147,10 @@ class _AudiobookTTSPageState extends State<AudiobookTTSPage> {
           currentPage = bookmarks.isNotEmpty ? bookmarks.last : startPage;
         });
 
-        // Ensure PDF scrolls to the latest bookmark
         if (pdfController != null) {
           pdfController!.setPage(currentPage);
         }
 
-        // Start TTS automatically after setting page
         if (localPdfPath.isNotEmpty) {
           extractAndSpeakText(currentPage);
           setState(() => isPlaying = true);

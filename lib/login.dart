@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void>login() async{
     setState(() {
-      isLoading = true; // Start loading
+      isLoading = true;
     });
     try{
       if (_usernameController.text.isEmpty) {
@@ -32,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
           const SnackBar(content: Text('Please Enter Username')),
         );
         setState(() {
-          isLoading = false; // Stop loading
+          isLoading = false;
         });
         return;
       }
@@ -41,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
           const SnackBar(content: Text('Please Enter Password')),
         );
         setState(() {
-          isLoading = false; // Stop loading
+          isLoading = false;
         });
         return;
       }
@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
           const SnackBar(content: Text("Invalid Username")),
         );
         setState(() {
-          isLoading = false; // Stop loading
+          isLoading = false;
         });
         return;
       }
@@ -82,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
       );
     }finally {
       setState(() {
-        isLoading = false; // Stop loading
+        isLoading = false;
       });
     }
   }
@@ -166,9 +166,9 @@ class _LoginPageState extends State<LoginPage> {
                           overlayColor: WidgetStateProperty.resolveWith<Color?>(
                                 (Set<WidgetState> states) {
                               if (states.contains(WidgetState.pressed)) {
-                                return Color(0xFFE07A5F).withOpacity(0.2); // Splash effect color
+                                return Color(0xFFE07A5F).withOpacity(0.2);
                               }
-                              return null; // Default splash color
+                              return null;
                             },
                           ),
                         ),

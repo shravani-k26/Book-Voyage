@@ -134,13 +134,11 @@ class _CreateAccountState extends State<CreateAccountPage>{
         MaterialPageRoute(builder: (context)=>InterestsPage(uid: uid)),
       );
     }on FirebaseAuthException catch (e) {
-      // Check for specific error code when email is already in use
       if (e.code == 'email-already-in-use') {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('The email address is already in use.')),
         );
       } else {
-        // For other FirebaseAuthException errors
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${e.message}')),
         );
@@ -191,7 +189,7 @@ class _CreateAccountState extends State<CreateAccountPage>{
                       ),
                     ),
                     const SizedBox(height: 10,),
-                    Container(height: 120,
+                    Container(height: 150,
                         width: 300,
                         child: Image.asset("assets/images/acc_logo.png")
                     ),

@@ -52,7 +52,7 @@ class SettingsPage extends StatelessWidget {
             ),
             ListTile(
               leading: Icon(Icons.description),
-              title: Text('Terms and Services'),
+              title: Text('Terms and Conditions'),
               onTap: () {
                 Navigator.push(
                   context,

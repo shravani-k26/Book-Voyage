@@ -175,8 +175,6 @@ class _SearchBookClubPageState extends State<SearchBookClubPage> {
                     ],
                   ),
 
-                // Display Search Results
-                // Display Search Results or No Results Found
                 if (_isSearching)
                   _searchResults.isEmpty
                       ? const Padding(

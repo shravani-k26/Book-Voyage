@@ -26,6 +26,7 @@ class _SideNavigationState extends State<SideNavigation> {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   String userName="";
   String profileImageUrl = "";
+  bool isLoading = false;
   Future<void> fetchUserName() async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -37,10 +38,10 @@ class _SideNavigationState extends State<SideNavigation> {
           profileImageUrl = userData.containsKey('profile_image') ? userData['profile_image'] : ""; // Check for existence
         });
       } else {
-        // If user document doesn't exist, create a default one
+        // If user document does not exist, create a default one
         await _firestore.collection("users").doc(user.uid).set({
           'username': user.email ?? "Unknown User",
-          'profile_image': "", // Default to empty string
+          'profile_image': "",
         });
         setState(() {
           userName = user.email ?? "Unknown User";
@@ -57,6 +58,9 @@ class _SideNavigationState extends State<SideNavigation> {
     );
   }
   Future<void> uploadProfilePicture(String uid) async {
+    setState(() {
+      isLoading = true; // Set loading state to true
+    });
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -70,12 +74,21 @@ class _SideNavigationState extends State<SideNavigation> {
         });
         Fluttertoast.showToast(msg: "Image uploaded successfully");
         setState(() {
-          profileImageUrl = downloadUrl; // Update the UI with the new image
+          profileImageUrl = downloadUrl;// Update the UI with the new image
+          isLoading = false;
         });
       } catch (e) {
         print("Error uploading profile picture: $e");
         Fluttertoast.showToast(msg: "Image cannot be uploaded");
+        setState(() {
+          isLoading = false;
+        });
       }
+    }
+    else{
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -117,6 +130,13 @@ class _SideNavigationState extends State<SideNavigation> {
                 ),
               ),
             ),
+            if (isLoading)
+              const Positioned.fill(
+                child: Align(
+                  alignment: Alignment.center,
+                  child: CircularProgressIndicator(),
+                ),
+              ),
           ],
         ),
       ),

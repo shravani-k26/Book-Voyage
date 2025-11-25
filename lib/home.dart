@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
   Future<String?> getUserId() async {
-    await Future.delayed(Duration(seconds: 1)); // Simulate auth delay
+    await Future.delayed(Duration(seconds: 1));
     return FirebaseAuth.instance.currentUser?.uid;
   }
   @override

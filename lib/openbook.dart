@@ -22,7 +22,7 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
   int currentPageIndex = 0;
   List<int> bookmarks = [];
   String? localPdfPath;
-  PDFViewController? pdfViewController; // PDFViewController to manage page navigation
+  PDFViewController? pdfViewController;
 
   @override
   void initState() {
@@ -135,7 +135,7 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
           filePath: localPdfPath,
           defaultPage: currentPageIndex,
           onViewCreated: (controller) {
-            pdfViewController = controller; // Store PDFViewController
+            pdfViewController = controller;
           },
           onPageChanged: (int? current, int? total) {
             setState(() {

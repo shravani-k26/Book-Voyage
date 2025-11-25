@@ -22,13 +22,19 @@ class _InterestsPageState extends State<InterestsPage> {
     try {
       DocumentSnapshot userDoc = await _firestore.collection('users').doc(widget.uid).get();
       if (userDoc.exists) {
-        // Get the interests from Firestore and update the selectedInterests set
-        List<dynamic> interestsFromFirestore = userDoc['interests'] ?? [];
-        setState(() {
-          selectedInterests.addAll(interestsFromFirestore.map((e) => e.toString()));
-        });
+        // Check if 'interests' field exists and is not null
+        var userData = userDoc.data() as Map<String, dynamic>;
+        if (userData != null && userData['interests'] != null) {
+          List<dynamic> interestsFromFirestore = userData['interests'] ?? [];
+          setState(() {
+            selectedInterests.addAll(interestsFromFirestore.map((e) => e.toString()));
+          });
+        } else {
+          // Handle case where 'interests' field doesn't exist or is empty
+          print('No interests field found or field is empty for user: ${widget.uid}');
+        }
       }
-    } catch (e) {
+    }catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error fetching interests: $e')),
       );

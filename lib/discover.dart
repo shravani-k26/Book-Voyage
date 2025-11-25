@@ -31,11 +31,11 @@ class _DiscoverPageState extends State<DiscoverPage> {
                       categoryTile("Self Help", "assets/images/self.jpg"),
                       categoryTile("Educational", "assets/images/educational.jpg"),
                       categoryTile("Adventure", "assets/images/adventure.jpg"),
+                      categoryTile("Autobiography", "assets/images/Autobiography.jpeg")
                     ],
                   ),
                 );
               } else {
-                // Show Search Results when user types
                 return StreamBuilder(
                   stream: FirebaseFirestore.instance.collection('books').snapshots(),
                   builder: (context, snapshot) {
@@ -45,7 +45,6 @@ class _DiscoverPageState extends State<DiscoverPage> {
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                       return Center(child: Text("No books found"));
                     }
-
                     var books = snapshot.data!.docs.where((doc) {
                       var data = doc.data() as Map<String, dynamic>;
                       var title = data.containsKey('title') ? data['title'].toString().toLowerCase() : "";
@@ -111,7 +110,6 @@ class _DiscoverPageState extends State<DiscoverPage> {
     );
   }
 
-// Reusable widget for categories
   Widget categoryTile(String title, String imagePath) {
     return GestureDetector(
       onTap: () {

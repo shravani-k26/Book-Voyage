@@ -134,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
             StreamBuilder<DocumentSnapshot>(
               stream: widget.uid.isNotEmpty
                   ? _firestore.collection('users').doc(widget.uid).snapshots()
-                  : null, // Prevents Firestore query when UID is empty
+                  : null,
               builder: (context, snapshot) {
                 if (!snapshot.hasData || !snapshot.data!.exists) {
                   return SizedBox.shrink();

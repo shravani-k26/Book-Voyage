@@ -15,7 +15,6 @@ class _BookPreviewWebViewState extends State<BookPreviewWebView> {
   @override
   void initState() {
     super.initState();
-    // Initialize the WebViewController with the provided URL
     webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadRequest(Uri.parse(widget.previewUrl));

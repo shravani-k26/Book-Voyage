@@ -156,7 +156,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
         .doc(widget.bookId)
         .get();
     if (purchaseSnapshot.exists) {
-      var data = purchaseSnapshot.data() as Map<String, dynamic>?; // Ensure it's a Map
+      var data = purchaseSnapshot.data() as Map<String, dynamic>?;
       if (data != null && data.containsKey('isPurchased') && data['isPurchased'] == true) {
         setState(() {
           isPurchased = true;
@@ -210,12 +210,11 @@ class _BookDetailsPageState extends State<BookDetailsPage> with SingleTickerProv
       stars.add(Icon(Icons.star, color: Colors.amber[400], size: 26.0));
     }
 
-    // Add half star if necessary
+    // Add half star
     if (hasHalfStar) {
       stars.add(Icon(Icons.star_half, color: Colors.amber[400], size: 26.0));
     }
 
-    // Fill remaining stars with empty outline
     while (stars.length < 5) {
       stars.add(Icon(Icons.star_border, color: Colors.amber[400], size: 26.0));
     }

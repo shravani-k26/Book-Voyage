@@ -14,8 +14,8 @@ class PaymentService {
     required VoidCallback onSuccess,
   }) {
     var options = {
-      'key': 'rzp_test_hbOeE6rm53Xns2', // Replace with your Razorpay Key ID
-      'amount': price * 100, // Razorpay accepts amount in paise
+      'key': 'rzp_test_hbOeE6rm53Xns2',
+      'amount': price * 100,
       'currency': 'INR',
       'name': 'Book Voyage',
       'description': 'Purchase Book',
