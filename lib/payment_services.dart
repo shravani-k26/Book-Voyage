@@ -14,7 +14,7 @@ class PaymentService {
     required VoidCallback onSuccess,
   }) {
     var options = {
-      'key': 'rzp_test_hbOeE6rm53Xns2',
+      'key': 'RAZORPAY_KEY_ID',
       'amount': price * 100,
       'currency': 'INR',
       'name': 'Book Voyage',
